@@ -58,14 +58,15 @@ function TransformerLab() {
         <RigidBody type="fixed" colliders="ball">
           <mesh>
             <sphereGeometry args={[0.8, 32, 32]} />
-            <MeshTransmissionMaterial 
-              samples={4}
-              thickness={0.5}
-              chromaticAberration={0.8}
-              anisotropy={0.2}
+            <meshPhysicalMaterial 
+              transmission={0.8}
+              roughness={0.15}
+              metalness={0.1}
+              clearcoat={1.0}
+              clearcoatRoughness={0.1}
               color="#00ffff"
               transparent
-              opacity={0.7}
+              opacity={0.8}
             />
             <Edges scale={1} threshold={15} color="#00ffff" />
           </mesh>
@@ -259,12 +260,15 @@ function MolecularGraph() {
       <Float speed={1} rotationIntensity={1.5}>
         <mesh>
           <icosahedronGeometry args={[0.7, 1]} />
-          <MeshTransmissionMaterial 
-            backside 
-            samples={4} 
-            thickness={0.5} 
-            chromaticAberration={1} 
-            color="#00ff88" 
+          <meshPhysicalMaterial 
+            transmission={0.8}
+            roughness={0.15}
+            metalness={0.1}
+            clearcoat={1.0}
+            clearcoatRoughness={0.1}
+            color="#00ff88"
+            transparent
+            opacity={0.8}
           />
         </mesh>
       </Float>
@@ -438,17 +442,15 @@ function PhysicsBall({ tech, index, center }: { tech: string, index: number, cen
     <RigidBody ref={api} type="dynamic" colliders="ball" position={initialPos} restitution={0.8}>
       <mesh onPointerEnter={handlePointerEnter} onPointerMove={handlePointerEnter}>
         <sphereGeometry args={[1.2, 32, 32]} />
-        <MeshTransmissionMaterial 
-          samples={4}
-          thickness={0.2}
-          chromaticAberration={0.5}
-          anisotropy={0.1}
-          distortion={0}
-          distortionScale={0}
-          temporalDistortion={0}
+        <meshPhysicalMaterial 
+          transmission={0.8}
+          roughness={0.15}
+          metalness={0.1}
+          clearcoat={1.0}
+          clearcoatRoughness={0.1}
           color={index % 2 === 0 ? "#00ffff" : "#ff00ff"}
-          opacity={0.8}
           transparent
+          opacity={0.8}
         />
       </mesh>
       <Html distanceFactor={10} position={[0, 0, 0]} pointerEvents="none">
@@ -500,7 +502,7 @@ export default function Experience() {
         <TechStackCluster />
       </Physics>
 
-      <EffectComposer multisampling={4}>
+      <EffectComposer multisampling={0}>
         <Bloom luminanceThreshold={0.2} mipmapBlur intensity={1.5} />
         <ChromaticAberration
           blendFunction={BlendFunction.NORMAL}

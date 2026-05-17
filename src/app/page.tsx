@@ -83,7 +83,17 @@ export default function Home() {
     <main ref={containerRef} className="relative w-full h-[800vh] bg-[#050505] text-white">
       {/* 3D Canvas - Fixed Background */}
       <div className="fixed top-0 left-0 w-full h-screen z-0">
-        <Canvas camera={{ position: [0, 0, 5], fov: 75 }}>
+        <Canvas 
+          camera={{ position: [0, 0, 5], fov: 75 }}
+          dpr={[1, 1.5]}
+          gl={{ 
+            antialias: false, 
+            powerPreference: "high-performance",
+            alpha: false,
+            stencil: false,
+            depth: true
+          }}
+        >
           <Suspense fallback={null}>
             <Experience />
           </Suspense>
