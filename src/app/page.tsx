@@ -1,17 +1,29 @@
 "use client";
 
-import { useEffect, useRef, Suspense } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import Lenis from "lenis";
 import { Canvas } from "@react-three/fiber";
 import Experience from "@/components/Experience";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Mail, FileText, ExternalLink, ShieldAlert, Cpu, Network, Server, Activity, Send, Terminal, Database } from "lucide-react";
+import { Mail, FileText, ShieldAlert, Cpu, Network, Activity, Send, Terminal, Grid } from "lucide-react";
 
 gsap.registerPlugin(ScrollTrigger);
 
+const SECTIONS = [
+  { name: "CORE", id: "hero" },
+  { name: "TRANSFORMER", id: "transformer" },
+  { name: "ADVERSARIAL", id: "adversarial" },
+  { name: "MOLECULAR", id: "molecular" },
+  { name: "MEDICAL", id: "medical" },
+  { name: "COMMAND", id: "command" },
+  { name: "TECH STACK", id: "techstack" },
+  { name: "CONTACT", id: "contact" }
+];
+
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [activeSection, setActiveSection] = useState(0);
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -24,7 +36,17 @@ export default function Home() {
       touchMultiplier: 2,
     });
 
-    lenis.on("scroll", ScrollTrigger.update);
+    lenis.on("scroll", (e) => {
+      ScrollTrigger.update();
+      // Calculate active section index based on scroll position
+      const scrollY = window.scrollY;
+      const height = window.innerHeight;
+      const index = Math.min(
+        SECTIONS.length - 1,
+        Math.max(0, Math.round(scrollY / height))
+      );
+      setActiveSection(index);
+    });
 
     gsap.ticker.add((time) => {
       lenis.raf(time * 1000);
@@ -40,6 +62,13 @@ export default function Home() {
     };
   }, []);
 
+  const handleNavClick = (index: number) => {
+    window.scrollTo({
+      top: index * window.innerHeight,
+      behavior: "smooth"
+    });
+  };
+
   return (
     <main ref={containerRef} className="relative w-full h-[800vh] bg-[#050505] text-white">
       {/* 3D Canvas - Fixed Background */}
@@ -51,15 +80,32 @@ export default function Home() {
         </Canvas>
       </div>
 
+      {/* High-Tech Glassmorphic Navigation Bar */}
+      <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto flex items-center gap-2 md:gap-4 px-4 py-2.5 rounded-full border border-white/10 bg-black/45 backdrop-blur-md shadow-[0_4px_30px_rgba(0,0,0,0.5)] max-w-[95%] overflow-x-auto scrollbar-none">
+        {SECTIONS.map((sec, idx) => (
+          <button
+            key={sec.id}
+            onClick={() => handleNavClick(idx)}
+            className={`px-3 py-1 text-[9px] md:text-xs font-mono tracking-widest uppercase transition-all duration-300 rounded-full border ${
+              activeSection === idx
+                ? "bg-cyan-500/10 border-cyan-500/50 text-cyan-400 font-bold shadow-[0_0_10px_rgba(0,255,255,0.2)]"
+                : "border-transparent text-gray-500 hover:text-white"
+            }`}
+          >
+            {sec.name}
+          </button>
+        ))}
+      </nav>
+
       {/* HTML Overlays over the scroll */}
       <div className="relative z-10 w-full h-full pointer-events-none">
         
         {/* HERO SECTION */}
-        <section className="h-screen flex flex-col items-center justify-center pointer-events-auto px-4 md:px-6 relative">
+        <section id="hero" className="h-screen flex flex-col items-center justify-center pointer-events-auto px-4 md:px-6 relative">
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />
           
           <div className="z-10 flex flex-col items-center text-center w-full max-w-4xl backdrop-blur-sm bg-black/20 p-8 md:p-12 rounded-3xl border border-white/5 shadow-2xl">
-            <h1 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-gray-300 to-gray-600 mb-4" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
+            <h1 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-gray-300 to-gray-600 mb-4 animate-fade-in" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
               PRANAV S. SHETTY
             </h1>
             
@@ -101,7 +147,7 @@ export default function Home() {
         </section>
         
         {/* SECTION A: Transformer Lab */}
-        <section className="h-screen flex items-center justify-start px-6 md:px-24 pointer-events-none">
+        <section id="transformer" className="h-screen flex items-center justify-start px-6 md:px-24 pointer-events-none">
           <div className="max-w-xl backdrop-blur-md bg-black/40 p-8 md:p-10 rounded-2xl border border-cyan-500/20 shadow-[0_0_40px_rgba(0,255,255,0.05)] hover:shadow-[0_0_60px_rgba(0,255,255,0.1)] transition-all pointer-events-auto">
             <div className="flex items-center gap-3 mb-4 md:mb-6 text-cyan-400">
               <Cpu size={28} />
@@ -124,7 +170,7 @@ export default function Home() {
         </section>
 
         {/* SECTION B: Adversarial Vault */}
-        <section className="h-screen flex items-center justify-end px-6 md:px-24 pointer-events-none">
+        <section id="adversarial" className="h-screen flex items-center justify-end px-6 md:px-24 pointer-events-none">
           <div className="max-w-xl backdrop-blur-md bg-black/40 p-8 md:p-10 rounded-2xl border border-red-500/20 shadow-[0_0_40px_rgba(255,0,0,0.05)] hover:shadow-[0_0_60px_rgba(255,0,0,0.1)] transition-all text-left md:text-right pointer-events-auto w-full md:w-auto">
             <div className="flex items-center md:justify-end gap-3 mb-4 md:mb-6 text-red-500">
               <span className="font-mono tracking-wider opacity-80 uppercase text-xs md:text-sm">IEEE ICAIC 2026</span>
@@ -147,7 +193,7 @@ export default function Home() {
         </section>
 
         {/* SECTION C: Molecular Cluster */}
-        <section className="h-screen flex items-center justify-start px-6 md:px-24 pointer-events-none">
+        <section id="molecular" className="h-screen flex items-center justify-start px-6 md:px-24 pointer-events-none">
           <div className="max-w-xl backdrop-blur-md bg-black/40 p-8 md:p-10 rounded-2xl border border-green-500/20 shadow-[0_0_40px_rgba(0,255,100,0.05)] hover:shadow-[0_0_60px_rgba(0,255,100,0.1)] transition-all pointer-events-auto">
             <div className="flex items-center gap-3 mb-4 md:mb-6 text-green-400">
               <Network size={28} />
@@ -170,7 +216,7 @@ export default function Home() {
         </section>
 
         {/* SECTION D: Medical Node */}
-        <section className="h-screen flex items-center justify-end px-6 md:px-24 pointer-events-none">
+        <section id="medical" className="h-screen flex items-center justify-end px-6 md:px-24 pointer-events-none">
           <div className="max-w-xl backdrop-blur-md bg-black/40 p-8 md:p-10 rounded-2xl border border-pink-500/20 shadow-[0_0_40px_rgba(255,0,150,0.05)] hover:shadow-[0_0_60px_rgba(255,0,150,0.1)] transition-all text-left md:text-right pointer-events-auto w-full md:w-auto">
             <div className="flex items-center md:justify-end gap-3 mb-4 md:mb-6 text-pink-400">
               <span className="font-mono tracking-wider opacity-80 uppercase text-xs md:text-sm">Active Project</span>
@@ -193,7 +239,7 @@ export default function Home() {
         </section>
 
         {/* SECTION E: Command Center */}
-        <section className="h-screen flex items-center justify-start px-6 md:px-24 pointer-events-none">
+        <section id="command" className="h-screen flex items-center justify-start px-6 md:px-24 pointer-events-none">
           <div className="max-w-xl backdrop-blur-md bg-black/40 p-8 md:p-10 rounded-2xl border border-purple-500/20 shadow-[0_0_40px_rgba(150,0,255,0.05)] hover:shadow-[0_0_60px_rgba(150,0,255,0.1)] transition-all pointer-events-auto">
             <div className="flex items-center gap-3 mb-4 md:mb-6 text-purple-400">
               <Terminal size={28} />
@@ -216,18 +262,17 @@ export default function Home() {
         </section>
 
         {/* SECTION F: Tech Stack (Interactive balls in background) */}
-        <section className="h-screen flex flex-col items-center justify-start pt-32 px-6 pointer-events-none">
+        <section id="techstack" className="h-screen flex flex-col items-center justify-start pt-32 px-6 pointer-events-none">
           <div className="text-center mb-10 z-10">
             <h2 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
               MY TECH STACK
             </h2>
             <p className="text-gray-400 max-w-md mx-auto">Interact with the physics cluster. Hover to scatter.</p>
           </div>
-          {/* Background has the balls */}
         </section>
 
         {/* SECTION G: Contact Page */}
-        <section className="h-[100vh] flex items-center justify-center px-4 md:px-6 pointer-events-none">
+        <section id="contact" className="h-[100vh] flex items-center justify-center px-4 md:px-6 pointer-events-none">
           <div className="w-full max-w-4xl backdrop-blur-md bg-black/60 p-8 md:p-16 rounded-3xl border border-white/10 shadow-2xl pointer-events-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
               <div>
