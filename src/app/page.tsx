@@ -23,6 +23,7 @@ const SECTIONS = [
 
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const lenisRef = useRef<Lenis | null>(null);
   const [activeSection, setActiveSection] = useState(0);
 
   useEffect(() => {
@@ -35,6 +36,8 @@ export default function Home() {
       wheelMultiplier: 1,
       touchMultiplier: 2,
     });
+
+    lenisRef.current = lenis;
 
     lenis.on("scroll", (e) => {
       ScrollTrigger.update();
@@ -59,14 +62,21 @@ export default function Home() {
         lenis.raf(time * 1000);
       });
       lenis.destroy();
+      lenisRef.current = null;
     };
   }, []);
 
   const handleNavClick = (index: number) => {
-    window.scrollTo({
-      top: index * window.innerHeight,
-      behavior: "smooth"
-    });
+    if (lenisRef.current) {
+      lenisRef.current.scrollTo(index * window.innerHeight, {
+        duration: 1.5,
+      });
+    } else {
+      window.scrollTo({
+        top: index * window.innerHeight,
+        behavior: "smooth"
+      });
+    }
   };
 
   return (
