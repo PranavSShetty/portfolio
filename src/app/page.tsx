@@ -363,9 +363,12 @@ export default function Home() {
               <a href="https://linkedin.com/in/pranav-s-shetty-b69308260" target="_blank" rel="noreferrer" className="p-3 bg-white/5 rounded-full hover:bg-cyan-500/20 hover:text-cyan-400 transition-all border border-white/10 hover:border-cyan-500/50 pointer-events-auto">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
               </a>
-              <a href="mailto:studytimemail24@gmail.com" className="p-3 bg-white/5 rounded-full hover:bg-cyan-500/20 hover:text-cyan-400 transition-all border border-white/10 hover:border-cyan-500/50 pointer-events-auto">
+              <button 
+                onClick={() => handleNavClick(7)} 
+                className="p-3 bg-white/5 rounded-full hover:bg-cyan-500/20 hover:text-cyan-400 transition-all border border-white/10 hover:border-cyan-500/50 pointer-events-auto cursor-pointer"
+              >
                 <Mail size={24} />
-              </a>
+              </button>
               <a href="/pranav_s_shetty_cv.pdf" target="_blank" className="flex items-center gap-2 px-6 py-3 bg-cyan-500/10 text-cyan-400 rounded-full font-medium hover:bg-cyan-500/20 transition-all border border-cyan-500/30 pointer-events-auto">
                 <FileText size={20} />
                 <span>View Resume</span>
