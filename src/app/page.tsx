@@ -6,7 +6,7 @@ import { Canvas } from "@react-three/fiber";
 import Experience from "@/components/Experience";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Mail, FileText, ShieldAlert, Cpu, Network, Activity, Send, Terminal, Grid } from "lucide-react";
+import { Mail, FileText, ShieldAlert, Cpu, Network, Activity, Send, Terminal, ShieldCheck } from "lucide-react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -21,10 +21,29 @@ const SECTIONS = [
   { name: "CONTACT", id: "contact" }
 ];
 
+const HACKER_LOGS = [
+  "SYSTEM STATUS: INITIALIZING SECURE OVERRIDE...",
+  "DECRYPTING CORE VOID COMPASS SPLINES...",
+  "PORT SCANNING VOID SOCKET 3000... [ACTIVE]",
+  "ESTABLISHING HIGH-PERFORMANCE CUDA CHANNELS...",
+  "BYPASSING SECURITY PROTOCOL: SAHYADRI_AUTH...",
+  "INJECTING CGAN FEATURE-WISE ADVERSARIAL LAYERS...",
+  "CALCULATING PHARMACOLOGICAL MOLECULAR GRAPHS...",
+  "LUB-DUB CARDIOTOXIC AGENTS INITIALIZED...",
+  "ATTEMPTING ROBOTIC SECURITY GATE BREACH...",
+  "GATE SECURITY CODE DECRYPTED: 0x7FFA45E1"
+];
+
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const lenisRef = useRef<Lenis | null>(null);
   const [activeSection, setActiveSection] = useState(0);
+
+  // Breach loader state
+  const [loading, setLoading] = useState(true);
+  const [breachProgress, setBreachProgress] = useState(0);
+  const [activeLogs, setActiveLogs] = useState<string[]>([]);
+  const [terminalPhase, setTerminalPhase] = useState<"hacking" | "success">("hacking");
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -57,6 +76,13 @@ export default function Home() {
 
     gsap.ticker.lagSmoothing(0);
 
+    // Initial scroll lock during hacking
+    if (loading) {
+      lenis.stop();
+    } else {
+      lenis.start();
+    }
+
     return () => {
       gsap.ticker.remove((time) => {
         lenis.raf(time * 1000);
@@ -64,6 +90,37 @@ export default function Home() {
       lenis.destroy();
       lenisRef.current = null;
     };
+  }, [loading]);
+
+  // Handle Hacking Simulator Loading Sequence
+  useEffect(() => {
+    if (!loading) return;
+
+    let logIndex = 0;
+    const progressInterval = setInterval(() => {
+      setBreachProgress((prev) => {
+        const next = prev + Math.floor(Math.random() * 8) + 4;
+        if (next >= 100) {
+          clearInterval(progressInterval);
+          setTerminalPhase("success");
+          setTimeout(() => {
+            setLoading(false);
+          }, 1000); // Wait in successful state for extra epic visual impact
+          return 100;
+        }
+
+        // Add matching logs as progress counts up
+        const logThreshold = Math.floor((HACKER_LOGS.length - 1) * (next / 100));
+        if (logThreshold >= logIndex) {
+          setActiveLogs((prevLogs) => [...prevLogs, HACKER_LOGS[logIndex]]);
+          logIndex++;
+        }
+
+        return next;
+      });
+    }, 150);
+
+    return () => clearInterval(progressInterval);
   }, []);
 
   const handleNavClick = (index: number) => {
@@ -80,7 +137,7 @@ export default function Home() {
   };
 
   return (
-    <main ref={containerRef} className="relative w-full h-[800vh] bg-[#050505] text-white">
+    <main ref={containerRef} className="relative w-full h-[800vh] bg-[#050505] text-white overflow-x-hidden">
       {/* 3D Canvas - Fixed Background */}
       <div className="fixed top-0 left-0 w-full h-screen z-0">
         <Canvas 
@@ -95,13 +152,85 @@ export default function Home() {
           }}
         >
           <Suspense fallback={null}>
-            <Experience />
+            <Experience gateOpen={!loading} />
           </Suspense>
         </Canvas>
       </div>
 
+      {/* Futuristic Hacker Terminal Loader Overlay */}
+      {loading && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black select-none pointer-events-auto font-mono">
+          {/* Neon Grid Backing & Scanline effect */}
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_4px,3px_100%] pointer-events-none animate-pulse" />
+          <div className="absolute inset-0 bg-radial-gradient from-transparent via-black/80 to-black pointer-events-none" />
+
+          {/* Centered Hacking Interface */}
+          <div className="w-full max-w-xl mx-4 bg-black/85 border border-cyan-500/30 rounded-lg p-6 relative overflow-hidden shadow-[0_0_50px_rgba(0,255,255,0.15)] transition-all">
+            {/* Header Terminal bar */}
+            <div className="flex justify-between items-center border-b border-cyan-500/20 pb-3 mb-4 text-xs tracking-wider">
+              <div className="flex items-center gap-2">
+                <Terminal size={14} className="text-cyan-400 animate-pulse" />
+                <span className="text-cyan-400 font-bold">VOID_TERMINAL://BREACH_UTILITY.sh</span>
+              </div>
+              <span className="text-gray-500 animate-ping">● LIVE_PENTEST</span>
+            </div>
+
+            {/* Simulated Live Console Logs */}
+            <div className="h-44 overflow-y-auto mb-6 text-[10px] sm:text-xs leading-relaxed space-y-1.5 scrollbar-none text-green-400/90 pr-2">
+              <div>$ pranav_s_shetty --infiltrate --target=latent_void</div>
+              <div>[OK] LINK SECURED TO NVIDIA RTX 3050 CUDA CORES</div>
+              {activeLogs.map((log, index) => (
+                <div key={index} className="flex gap-2">
+                  <span className="text-cyan-500 font-bold">&gt;</span>
+                  <span>{log}</span>
+                </div>
+              ))}
+              {terminalPhase === "hacking" && (
+                <div className="flex items-center gap-1">
+                  <span className="text-cyan-500 font-bold">&gt;</span>
+                  <span className="bg-green-400 w-1.5 h-3.5 inline-block animate-blink"></span>
+                </div>
+              )}
+            </div>
+
+            {/* High-tech custom breach progress bar */}
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs font-bold font-mono">
+                <span className={terminalPhase === "success" ? "text-green-400" : "text-cyan-400"}>
+                  {terminalPhase === "success" ? "SECURITY BYPASSED - GATE OPEN" : "INJECTING EXPLOIT..."}
+                </span>
+                <span className={terminalPhase === "success" ? "text-green-400" : "text-cyan-400"}>
+                  {breachProgress}%
+                </span>
+              </div>
+              <div className="w-full bg-cyan-950/40 h-2.5 rounded overflow-hidden border border-cyan-500/20 relative">
+                <div 
+                  className={`h-full transition-all duration-150 ${
+                    terminalPhase === "success" ? "bg-green-400" : "bg-gradient-to-r from-cyan-500 to-cyan-300"
+                  }`} 
+                  style={{ width: `${breachProgress}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Flash success banner */}
+            {terminalPhase === "success" && (
+              <div className="absolute inset-0 bg-green-500/10 border-2 border-green-400/60 rounded-lg flex flex-col items-center justify-center gap-3 backdrop-blur-sm animate-scale-up">
+                <ShieldCheck size={48} className="text-green-400 animate-bounce" />
+                <h3 className="text-xl sm:text-2xl font-bold tracking-widest text-green-400 animate-pulse text-center">
+                  BREACH SUCCESSFUL
+                </h3>
+                <p className="text-xs text-white opacity-80 uppercase tracking-widest">DISMANTLING SECURITY CORE...</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* High-Tech Glassmorphic Navigation Bar */}
-      <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto flex items-center gap-2 md:gap-4 px-4 py-2.5 rounded-full border border-white/10 bg-black/45 backdrop-blur-md shadow-[0_4px_30px_rgba(0,0,0,0.5)] max-w-[95%] overflow-x-auto scrollbar-none">
+      <nav className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto flex items-center gap-2 md:gap-4 px-4 py-2.5 rounded-full border border-white/10 bg-black/45 backdrop-blur-md shadow-[0_4px_30px_rgba(0,0,0,0.5)] max-w-[95%] overflow-x-auto scrollbar-none transition-all duration-700 ${
+        loading ? "opacity-0 -translate-y-12" : "opacity-100 translate-y-0"
+      }`}>
         {SECTIONS.map((sec, idx) => (
           <button
             key={sec.id}

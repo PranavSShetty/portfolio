@@ -462,7 +462,107 @@ function PhysicsBall({ tech, index, center }: { tech: string, index: number, cen
   );
 }
 
-export default function Experience() {
+// Station 7: 3D Robotic Security Gate (Blocks view at start, slides open on breach)
+function RoboticGate({ open }: { open: boolean }) {
+  const leftGateRef = useRef<THREE.Group>(null);
+  const rightGateRef = useRef<THREE.Group>(null);
+  const lockRef = useRef<THREE.Mesh>(null);
+  const [lockColor, setLockColor] = useState("#ff0033");
+
+  useEffect(() => {
+    if (open && leftGateRef.current && rightGateRef.current && lockRef.current) {
+      // 1. Slide gates open
+      gsap.to(leftGateRef.current.position, {
+        x: -6.5,
+        duration: 2.2,
+        ease: "power3.inOut"
+      });
+      gsap.to(rightGateRef.current.position, {
+        x: 6.5,
+        duration: 2.2,
+        ease: "power3.inOut"
+      });
+
+      // 2. Alert Success Color
+      setLockColor("#00ff44");
+
+      // 3. Shrink lock
+      gsap.to(lockRef.current.scale, {
+        x: 0,
+        y: 0,
+        z: 0,
+        duration: 1.5,
+        ease: "back.in",
+        delay: 0.2
+      });
+    }
+  }, [open]);
+
+  return (
+    <group position={[0, 0, 7.8]}>
+      {/* Left Gate Panel */}
+      <group ref={leftGateRef} position={[-1.7, 0, 0]}>
+        <mesh>
+          <boxGeometry args={[3, 4.5, 0.1]} />
+          <meshPhysicalMaterial
+            transmission={0.8}
+            roughness={0.2}
+            metalness={0.5}
+            clearcoat={1.0}
+            color="#00ffff"
+            transparent
+            opacity={0.4}
+          />
+          <Edges scale={1} threshold={15} color="#00ffff" />
+        </mesh>
+        {/* Futuristic details */}
+        <mesh position={[0.5, 0, 0.06]}>
+          <boxGeometry args={[0.1, 4.2, 0.05]} />
+          <meshStandardMaterial color="#00ffff" emissive="#002233" />
+        </mesh>
+        <mesh position={[-0.5, 0, 0.06]}>
+          <boxGeometry args={[0.1, 4.2, 0.05]} />
+          <meshStandardMaterial color="#00ffff" emissive="#002233" />
+        </mesh>
+      </group>
+
+      {/* Right Gate Panel */}
+      <group ref={rightGateRef} position={[1.7, 0, 0]}>
+        <mesh>
+          <boxGeometry args={[3, 4.5, 0.1]} />
+          <meshPhysicalMaterial
+            transmission={0.8}
+            roughness={0.2}
+            metalness={0.5}
+            clearcoat={1.0}
+            color="#00ffff"
+            transparent
+            opacity={0.4}
+          />
+          <Edges scale={1} threshold={15} color="#00ffff" />
+        </mesh>
+        {/* Futuristic details */}
+        <mesh position={[0.5, 0, 0.06]}>
+          <boxGeometry args={[0.1, 4.2, 0.05]} />
+          <meshStandardMaterial color="#00ffff" emissive="#002233" />
+        </mesh>
+        <mesh position={[-0.5, 0, 0.06]}>
+          <boxGeometry args={[0.1, 4.2, 0.05]} />
+          <meshStandardMaterial color="#00ffff" emissive="#002233" />
+        </mesh>
+      </group>
+
+      {/* Central Lock Cylinder */}
+      <mesh ref={lockRef} position={[0, 0, 0.15]} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.45, 0.45, 0.2, 32]} />
+        <meshStandardMaterial color={lockColor} emissive={lockColor} emissiveIntensity={1.5} />
+        <Edges scale={1.05} threshold={15} color={lockColor} />
+      </mesh>
+    </group>
+  );
+}
+
+export default function Experience({ gateOpen = false }: { gateOpen?: boolean }) {
   const [glitchActive, setGlitchActive] = useState(false);
 
   useEffect(() => {
@@ -492,6 +592,9 @@ export default function Experience() {
         <CameraPath />
         
         <MorphingCharacter position={[0, 0, 8]} />
+
+        {/* Robotic Breach Gate */}
+        <RoboticGate open={gateOpen} />
 
         {/* Dynamic Interactive Redesigned Stations */}
         <TransformerLab />
