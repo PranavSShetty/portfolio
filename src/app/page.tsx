@@ -44,6 +44,7 @@ export default function Home() {
   const [breachProgress, setBreachProgress] = useState(0);
   const [activeLogs, setActiveLogs] = useState<string[]>([]);
   const [terminalPhase, setTerminalPhase] = useState<"hacking" | "success">("hacking");
+  const loaderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -99,13 +100,24 @@ export default function Home() {
     let logIndex = 0;
     const progressInterval = setInterval(() => {
       setBreachProgress((prev) => {
-        const next = prev + Math.floor(Math.random() * 8) + 4;
+        const next = prev + Math.floor(Math.random() * 4) + 2;
         if (next >= 100) {
           clearInterval(progressInterval);
           setTerminalPhase("success");
           setTimeout(() => {
-            setLoading(false);
-          }, 1000); // Wait in successful state for extra epic visual impact
+            if (loaderRef.current) {
+              gsap.to(loaderRef.current, {
+                opacity: 0,
+                duration: 0.8,
+                ease: "power2.out",
+                onComplete: () => {
+                  setLoading(false);
+                }
+              });
+            } else {
+              setLoading(false);
+            }
+          }, 1200); // Wait in successful state for extra epic visual impact
           return 100;
         }
 
@@ -159,13 +171,16 @@ export default function Home() {
 
       {/* Futuristic Hacker Terminal Loader Overlay */}
       {loading && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black select-none pointer-events-auto font-mono">
+        <div 
+          ref={loaderRef}
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 backdrop-blur-md select-none pointer-events-auto font-mono"
+        >
           {/* Neon Grid Backing & Scanline effect */}
           <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_4px,3px_100%] pointer-events-none animate-pulse" />
           <div className="absolute inset-0 bg-radial-gradient from-transparent via-black/80 to-black pointer-events-none" />
 
           {/* Centered Hacking Interface */}
-          <div className="w-full max-w-xl mx-4 bg-black/85 border border-cyan-500/30 rounded-lg p-6 relative overflow-hidden shadow-[0_0_50px_rgba(0,255,255,0.15)] transition-all">
+          <div className="w-full max-w-xl mx-4 bg-black/80 border border-cyan-500/30 rounded-lg p-6 relative overflow-hidden shadow-[0_0_50px_rgba(0,255,255,0.15)] transition-all">
             {/* Header Terminal bar */}
             <div className="flex justify-between items-center border-b border-cyan-500/20 pb-3 mb-4 text-xs tracking-wider">
               <div className="flex items-center gap-2">

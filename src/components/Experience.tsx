@@ -517,7 +517,7 @@ function RoboticGate({ open }: { open: boolean }) {
   }, []);
 
   return (
-    <group position={[0, 0, 7.8]}>
+    <group position={[0, 0, 8.3]}>
       {/* LEFT HALF OF THE HEAVY VAULT DOOR */}
       <group ref={leftGateRef} position={[-1.7, 0, 0]}>
         {/* Left Armored Plate (Slightly Beveled Beams) */}
@@ -707,7 +707,7 @@ export default function Experience({ gateOpen = false }: { gateOpen?: boolean })
       <Physics gravity={[0, 0, 0]}>
         <CameraPath />
         
-        <MorphingCharacter position={[0, 0, 8]} />
+        <MorphingCharacter position={[0, 0, 6.0]} />
 
         {/* Robotic Breach Gate */}
         <RoboticGate open={gateOpen} />
@@ -739,7 +739,7 @@ export default function Experience({ gateOpen = false }: { gateOpen?: boolean })
         />
       </EffectComposer>
       
-      <Environment preset="city" />
+      <pointLight position={[0, 0, 10]} intensity={1.5} color="#00ffff" />
       
       <Instances range={200}>
         <boxGeometry args={[0.1, 0.1, 0.1]} />
