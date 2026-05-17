@@ -42,4 +42,5 @@ next-env.d.ts
 
 # cv files
 *.pdf
+!public/pranav_s_shetty_cv.pdf
 cv_text.txt
