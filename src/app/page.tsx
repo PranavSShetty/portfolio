@@ -6,7 +6,7 @@ import { Canvas } from "@react-three/fiber";
 import Experience from "@/components/Experience";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Mail, FileText, ShieldAlert, Cpu, Network, Activity, Send, Terminal, ShieldCheck } from "lucide-react";
+import { Mail, FileText, ShieldAlert, Cpu, Network, Activity, Send, Terminal, ShieldCheck, ChevronDown } from "lucide-react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -44,6 +44,7 @@ export default function Home() {
   const [breachProgress, setBreachProgress] = useState(0);
   const [activeLogs, setActiveLogs] = useState<string[]>([]);
   const [terminalPhase, setTerminalPhase] = useState<"hacking" | "success">("hacking");
+  const [projectsDropdownOpen, setProjectsDropdownOpen] = useState(false);
   const loaderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -243,22 +244,90 @@ export default function Home() {
       )}
 
       {/* High-Tech Glassmorphic Navigation Bar */}
-      <nav className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto flex items-center gap-2 md:gap-4 px-4 py-2.5 rounded-full border border-white/10 bg-black/45 backdrop-blur-md shadow-[0_4px_30px_rgba(0,0,0,0.5)] max-w-[95%] overflow-x-auto scrollbar-none transition-all duration-700 ${
+      <nav className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto flex items-center gap-2 md:gap-4 px-4 py-2.5 rounded-full border border-white/10 bg-black/45 backdrop-blur-md shadow-[0_4px_30px_rgba(0,0,0,0.5)] max-w-[95%] overflow-visible transition-all duration-700 ${
         loading ? "opacity-0 -translate-y-12" : "opacity-100 translate-y-0"
       }`}>
-        {SECTIONS.map((sec, idx) => (
+        {/* CORE BUTTON */}
+        <button
+          onClick={() => handleNavClick(0)}
+          className={`px-3 py-1 text-[9px] md:text-xs font-mono tracking-widest uppercase transition-all duration-300 rounded-full border ${
+            activeSection === 0
+              ? "bg-cyan-500/10 border-cyan-500/50 text-cyan-400 font-bold shadow-[0_0_10px_rgba(0,255,255,0.2)]"
+              : "border-transparent text-gray-500 hover:text-white"
+          }`}
+        >
+          CORE
+        </button>
+
+        {/* PROJECTS Trigger Wrapper with Glassmorphic Dropdown */}
+        <div 
+          className="relative"
+          onMouseEnter={() => setProjectsDropdownOpen(true)}
+          onMouseLeave={() => setProjectsDropdownOpen(false)}
+        >
           <button
-            key={sec.id}
-            onClick={() => handleNavClick(idx)}
-            className={`px-3 py-1 text-[9px] md:text-xs font-mono tracking-widest uppercase transition-all duration-300 rounded-full border ${
-              activeSection === idx
+            onClick={() => handleNavClick(1)} // Scroll to first project on direct click
+            className={`px-3 py-1 text-[9px] md:text-xs font-mono tracking-widest uppercase transition-all duration-300 rounded-full border flex items-center gap-1 md:gap-1.5 ${
+              activeSection >= 1 && activeSection <= 5
                 ? "bg-cyan-500/10 border-cyan-500/50 text-cyan-400 font-bold shadow-[0_0_10px_rgba(0,255,255,0.2)]"
                 : "border-transparent text-gray-500 hover:text-white"
             }`}
           >
-            {sec.name}
+            <span>PROJECTS</span>
+            <ChevronDown 
+              size={12} 
+              className={`transition-transform duration-300 ${projectsDropdownOpen ? "rotate-180 text-cyan-400" : "text-gray-500"}`} 
+            />
           </button>
-        ))}
+
+          {/* Floating Glassmorphic Dropdown */}
+          <div 
+            className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 rounded-xl border border-white/10 bg-black/90 backdrop-blur-md shadow-[0_10px_30px_rgba(0,255,255,0.08)] p-1.5 flex flex-col gap-1 transition-all duration-300 origin-top pointer-events-auto ${
+              projectsDropdownOpen 
+                ? "opacity-100 scale-100 translate-y-0" 
+                : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
+            }`}
+          >
+            {SECTIONS.slice(1, 6).map((sec, subIdx) => {
+              const idx = subIdx + 1; // actual index in main scroll
+              const isActive = activeSection === idx;
+              return (
+                <button
+                  key={sec.id}
+                  onClick={() => {
+                    handleNavClick(idx);
+                    setProjectsDropdownOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 rounded-lg font-mono text-[9px] md:text-[10px] tracking-wider uppercase transition-all duration-200 border ${
+                    isActive
+                      ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-400 font-bold"
+                      : "border-transparent text-gray-400 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  {sec.name}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* TECH STACK & CONTACT */}
+        {SECTIONS.slice(6).map((sec, idx) => {
+          const mainIdx = idx + 6;
+          return (
+            <button
+              key={sec.id}
+              onClick={() => handleNavClick(mainIdx)}
+              className={`px-3 py-1 text-[9px] md:text-xs font-mono tracking-widest uppercase transition-all duration-300 rounded-full border ${
+                activeSection === mainIdx
+                  ? "bg-cyan-500/10 border-cyan-500/50 text-cyan-400 font-bold shadow-[0_0_10px_rgba(0,255,255,0.2)]"
+                  : "border-transparent text-gray-500 hover:text-white"
+              }`}
+            >
+              {sec.name}
+            </button>
+          );
+        })}
       </nav>
 
       {/* HTML Overlays over the scroll */}
