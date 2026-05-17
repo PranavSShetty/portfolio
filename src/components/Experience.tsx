@@ -462,102 +462,218 @@ function PhysicsBall({ tech, index, center }: { tech: string, index: number, cen
   );
 }
 
-// Station 7: 3D Robotic Security Gate (Blocks view at start, slides open on breach)
+// Station 7: 3D Robotic Security Gate (Heavy Industrial Sci-Fi Vault Door)
 function RoboticGate({ open }: { open: boolean }) {
   const leftGateRef = useRef<THREE.Group>(null);
   const rightGateRef = useRef<THREE.Group>(null);
-  const lockRef = useRef<THREE.Mesh>(null);
-  const [lockColor, setLockColor] = useState("#ff0033");
+  const lockRef = useRef<THREE.Group>(null);
+  const [cyanGlowColor, setCyanGlowColor] = useState("#00ffff");
 
   useEffect(() => {
     if (open && leftGateRef.current && rightGateRef.current && lockRef.current) {
-      // 1. Slide gates open
-      gsap.to(leftGateRef.current.position, {
-        x: -6.5,
+      // 1. Spin the rotary lock core
+      gsap.to(lockRef.current.rotation, {
+        z: Math.PI * 4,
         duration: 2.2,
-        ease: "power3.inOut"
-      });
-      gsap.to(rightGateRef.current.position, {
-        x: 6.5,
-        duration: 2.2,
-        ease: "power3.inOut"
+        ease: "power2.inOut"
       });
 
-      // 2. Alert Success Color
-      setLockColor("#00ff44");
+      // 2. Change central cyber key glow to success green
+      setCyanGlowColor("#00ff44");
 
-      // 3. Shrink lock
+      // 3. Shrink lock core into the gateway
       gsap.to(lockRef.current.scale, {
         x: 0,
         y: 0,
         z: 0,
-        duration: 1.5,
+        duration: 1.6,
         ease: "back.in",
+        delay: 0.3
+      });
+
+      // 4. Slide open the massive armored vault doors
+      gsap.to(leftGateRef.current.position, {
+        x: -7.0,
+        duration: 2.5,
+        ease: "power3.inOut",
+        delay: 0.2
+      });
+      gsap.to(rightGateRef.current.position, {
+        x: 7.0,
+        duration: 2.5,
+        ease: "power3.inOut",
         delay: 0.2
       });
     }
   }, [open]);
 
+  // Generate radial rivets/bolts for the high-tech outer ring
+  const rivets = useMemo(() => {
+    return Array.from({ length: 12 }).map((_, i) => {
+      const angle = (i / 12) * Math.PI * 2;
+      const radius = 1.15;
+      return [Math.cos(angle) * radius, Math.sin(angle) * radius, 0.15] as [number, number, number];
+    });
+  }, []);
+
   return (
     <group position={[0, 0, 7.8]}>
-      {/* Left Gate Panel */}
+      {/* LEFT HALF OF THE HEAVY VAULT DOOR */}
       <group ref={leftGateRef} position={[-1.7, 0, 0]}>
-        <mesh>
-          <boxGeometry args={[3, 4.5, 0.1]} />
-          <meshPhysicalMaterial
-            transmission={0.8}
-            roughness={0.2}
-            metalness={0.5}
-            clearcoat={1.0}
-            color="#00ffff"
-            transparent
-            opacity={0.4}
-          />
+        {/* Left Armored Plate (Slightly Beveled Beams) */}
+        <mesh position={[0, 0, 0]}>
+          <boxGeometry args={[3.4, 4.8, 0.25]} />
+          <meshStandardMaterial color="#1a222a" roughness={0.4} metalness={0.7} />
           <Edges scale={1} threshold={15} color="#00ffff" />
         </mesh>
-        {/* Futuristic details */}
-        <mesh position={[0.5, 0, 0.06]}>
-          <boxGeometry args={[0.1, 4.2, 0.05]} />
-          <meshStandardMaterial color="#00ffff" emissive="#002233" />
+        
+        {/* Beveled Top/Bottom Trim Elements for Octagonal shape */}
+        <mesh position={[0.7, 2.2, 0.15]} rotation={[0, 0, -Math.PI / 4]}>
+          <boxGeometry args={[1.5, 0.2, 0.2]} />
+          <meshStandardMaterial color="#2d3741" roughness={0.3} metalness={0.8} />
         </mesh>
-        <mesh position={[-0.5, 0, 0.06]}>
-          <boxGeometry args={[0.1, 4.2, 0.05]} />
-          <meshStandardMaterial color="#00ffff" emissive="#002233" />
+        <mesh position={[0.7, -2.2, 0.15]} rotation={[0, 0, Math.PI / 4]}>
+          <boxGeometry args={[1.5, 0.2, 0.2]} />
+          <meshStandardMaterial color="#2d3741" roughness={0.3} metalness={0.8} />
+        </mesh>
+
+        {/* Heavy Left Column/Hinges */}
+        <mesh position={[-1.6, 0, 0.2]}>
+          <cylinderGeometry args={[0.22, 0.22, 4.6, 16]} />
+          <meshStandardMaterial color="#4f5d6b" roughness={0.15} metalness={0.9} />
+          <Edges scale={1.02} threshold={15} color="#00ffff" />
+        </mesh>
+
+        {/* Heavy Locking Side Clamp (Fitted block on column) */}
+        <mesh position={[-1.8, 0, 0.2]}>
+          <boxGeometry args={[0.6, 0.8, 0.7]} />
+          <meshStandardMaterial color="#2a333d" roughness={0.3} metalness={0.8} />
+          <Edges scale={1.02} threshold={15} color="#00ffff" />
+        </mesh>
+        
+        {/* Cylindrical locking bar connecting inside clamp */}
+        <mesh position={[-1.6, 1.2, 0.2]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.15, 0.15, 0.4, 16]} />
+          <meshStandardMaterial color="#7f8c8d" metalness={0.9} roughness={0.1} />
+        </mesh>
+        <mesh position={[-1.6, -1.2, 0.2]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.15, 0.15, 0.4, 16]} />
+          <meshStandardMaterial color="#7f8c8d" metalness={0.9} roughness={0.1} />
         </mesh>
       </group>
 
-      {/* Right Gate Panel */}
+      {/* RIGHT HALF OF THE HEAVY VAULT DOOR */}
       <group ref={rightGateRef} position={[1.7, 0, 0]}>
-        <mesh>
-          <boxGeometry args={[3, 4.5, 0.1]} />
-          <meshPhysicalMaterial
-            transmission={0.8}
-            roughness={0.2}
-            metalness={0.5}
-            clearcoat={1.0}
-            color="#00ffff"
-            transparent
-            opacity={0.4}
-          />
+        {/* Right Armored Plate */}
+        <mesh position={[0, 0, 0]}>
+          <boxGeometry args={[3.4, 4.8, 0.25]} />
+          <meshStandardMaterial color="#1a222a" roughness={0.4} metalness={0.7} />
           <Edges scale={1} threshold={15} color="#00ffff" />
         </mesh>
-        {/* Futuristic details */}
-        <mesh position={[0.5, 0, 0.06]}>
-          <boxGeometry args={[0.1, 4.2, 0.05]} />
-          <meshStandardMaterial color="#00ffff" emissive="#002233" />
+
+        {/* Beveled Top/Bottom Trim Elements for Octagonal shape */}
+        <mesh position={[-0.7, 2.2, 0.15]} rotation={[0, 0, Math.PI / 4]}>
+          <boxGeometry args={[1.5, 0.2, 0.2]} />
+          <meshStandardMaterial color="#2d3741" roughness={0.3} metalness={0.8} />
         </mesh>
-        <mesh position={[-0.5, 0, 0.06]}>
-          <boxGeometry args={[0.1, 4.2, 0.05]} />
-          <meshStandardMaterial color="#00ffff" emissive="#002233" />
+        <mesh position={[-0.7, -2.2, 0.15]} rotation={[0, 0, -Math.PI / 4]}>
+          <boxGeometry args={[1.5, 0.2, 0.2]} />
+          <meshStandardMaterial color="#2d3741" roughness={0.3} metalness={0.8} />
+        </mesh>
+
+        {/* Heavy Right Column/Hinges */}
+        <mesh position={[1.6, 0, 0.2]}>
+          <cylinderGeometry args={[0.22, 0.22, 4.6, 16]} />
+          <meshStandardMaterial color="#4f5d6b" roughness={0.15} metalness={0.9} />
+          <Edges scale={1.02} threshold={15} color="#00ffff" />
+        </mesh>
+
+        {/* Heavy Locking Side Clamp */}
+        <mesh position={[1.8, 0, 0.2]}>
+          <boxGeometry args={[0.6, 0.8, 0.7]} />
+          <meshStandardMaterial color="#2a333d" roughness={0.3} metalness={0.8} />
+          <Edges scale={1.02} threshold={15} color="#00ffff" />
+        </mesh>
+
+        {/* Cylindrical locking bar connecting inside clamp */}
+        <mesh position={[1.6, 1.2, 0.2]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.15, 0.15, 0.4, 16]} />
+          <meshStandardMaterial color="#7f8c8d" metalness={0.9} roughness={0.1} />
+        </mesh>
+        <mesh position={[1.6, -1.2, 0.2]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.15, 0.15, 0.4, 16]} />
+          <meshStandardMaterial color="#7f8c8d" metalness={0.9} roughness={0.1} />
         </mesh>
       </group>
 
-      {/* Central Lock Cylinder */}
-      <mesh ref={lockRef} position={[0, 0, 0.15]} rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.45, 0.45, 0.2, 32]} />
-        <meshStandardMaterial color={lockColor} emissive={lockColor} emissiveIntensity={1.5} />
-        <Edges scale={1.05} threshold={15} color={lockColor} />
-      </mesh>
+      {/* CENTRAL ROTARY CYCLOTRON VAULT LOCK CORE */}
+      {/* Ref-controlled so it spins and shrinks on breach */}
+      <group ref={lockRef} position={[0, 0, 0.15]}>
+        
+        {/* Massive Outer Glowing Neon Cyan Ring */}
+        <mesh>
+          <torusGeometry args={[1.05, 0.14, 16, 64]} />
+          <meshStandardMaterial 
+            color={cyanGlowColor} 
+            emissive={cyanGlowColor} 
+            emissiveIntensity={2.5} 
+          />
+        </mesh>
+
+        {/* Radial industrial bolt rivets placed around the neon ring */}
+        {rivets.map((pos, idx) => (
+          <mesh key={idx} position={pos}>
+            <sphereGeometry args={[0.08, 16, 16]} />
+            <meshStandardMaterial color="#4f5d6b" roughness={0.2} metalness={0.8} />
+          </mesh>
+        ))}
+
+        {/* Armored central cylinder housing */}
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.7, 0.7, 0.35, 32]} />
+          <meshStandardMaterial color="#2d3741" roughness={0.3} metalness={0.8} />
+          <Edges scale={1.02} threshold={15} color="#00ffff" />
+        </mesh>
+
+        {/* Outer lock cog teeth (procedural gear effect) */}
+        {Array.from({ length: 8 }).map((_, i) => {
+          const angle = (i / 8) * Math.PI * 2;
+          return (
+            <mesh 
+              key={`cog-${i}`} 
+              position={[Math.cos(angle) * 0.72, Math.sin(angle) * 0.72, 0]} 
+              rotation={[0, 0, angle]}
+            >
+              <boxGeometry args={[0.16, 0.16, 0.3]} />
+              <meshStandardMaterial color="#3a444e" roughness={0.2} metalness={0.8} />
+            </mesh>
+          );
+        })}
+
+        {/* Steel Biometric Scanner Core Casing */}
+        <mesh position={[0, 0, 0.1]} rotation={[Math.PI / 2, 0, 0]}>
+          <sphereGeometry args={[0.42, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+          <meshStandardMaterial color="#7f8c8d" metalness={0.9} roughness={0.15} />
+          <Edges scale={1.02} threshold={15} color="#00ffff" />
+        </mesh>
+
+        {/* Inner Laser core aperture / dial */}
+        <mesh position={[0, 0, 0.22]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.2, 0.2, 0.08, 32]} />
+          <meshStandardMaterial 
+            color={cyanGlowColor} 
+            emissive={cyanGlowColor} 
+            emissiveIntensity={1.8} 
+          />
+        </mesh>
+        
+        {/* Central lens scanner node */}
+        <mesh position={[0, 0, 0.25]}>
+          <sphereGeometry args={[0.08, 16, 16]} />
+          <meshBasicMaterial color="#ffffff" />
+        </mesh>
+
+      </group>
     </group>
   );
 }
