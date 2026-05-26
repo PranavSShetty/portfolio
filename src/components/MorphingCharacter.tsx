@@ -3,7 +3,6 @@
 import { useRef, useMemo, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { RigidBody, RapierRigidBody } from "@react-three/rapier";
 import { createNoise3D } from "simplex-noise";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -62,7 +61,7 @@ const fragmentShader = `
 `;
 
 export default function MorphingCharacter({ position }: { position: [number, number, number] }) {
-  const rigidBodyRef = useRef<RapierRigidBody>(null);
+  const groupRef = useRef<THREE.Group>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   
   const noise3D = useMemo(() => createNoise3D(), []);
@@ -98,24 +97,27 @@ export default function MorphingCharacter({ position }: { position: [number, num
       materialRef.current.uniforms.uMorphProgress.value = progressObj.current.value;
     }
 
-    if (rigidBodyRef.current) {
-      // Autonomous floating movement using Perlin (Simplex) noise
-      const currentPos = rigidBodyRef.current.translation();
-      const nx = noise3D(currentPos.x * 0.5, currentPos.y * 0.5, time * 0.2);
-      const ny = noise3D(currentPos.y * 0.5, currentPos.z * 0.5, time * 0.2);
-      const nz = noise3D(currentPos.z * 0.5, currentPos.x * 0.5, time * 0.2);
+    if (groupRef.current) {
+      // Gentle, ultra-smooth autonomous floating using Perlin noise
+      const nx = noise3D(time * 0.2, 0, 0) * 0.25;
+      const ny = noise3D(0, time * 0.2, 0) * 0.25;
+      const nz = noise3D(0, 0, time * 0.2) * 0.25;
 
-      // Apply subtle forces to keep it floating around its origin
-      // We'll apply impulses rather than setting position to allow physics collisions
-      rigidBodyRef.current.applyImpulse({ x: nx * 0.05, y: ny * 0.05, z: nz * 0.05 }, true);
+      groupRef.current.position.set(
+        position[0] + nx,
+        position[1] + ny,
+        position[2] + nz
+      );
       
-      // Add slight rotation
-      rigidBodyRef.current.applyTorqueImpulse({ x: nx * 0.01, y: ny * 0.01, z: nz * 0.01 }, true);
+      // Rolling organic rotation
+      groupRef.current.rotation.x = time * 0.15 + nx;
+      groupRef.current.rotation.y = time * 0.2 + ny;
+      groupRef.current.rotation.z = time * 0.1;
     }
   });
 
   return (
-    <RigidBody ref={rigidBodyRef} position={position} type="dynamic" colliders="ball" linearDamping={2} angularDamping={2}>
+    <group ref={groupRef} position={position}>
       <mesh>
         <icosahedronGeometry args={[1, 4]} />
         <shaderMaterial
@@ -127,6 +129,6 @@ export default function MorphingCharacter({ position }: { position: [number, num
           wireframe={false}
         />
       </mesh>
-    </RigidBody>
+    </group>
   );
 }

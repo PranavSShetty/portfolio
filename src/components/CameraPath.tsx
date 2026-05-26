@@ -9,7 +9,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 export default function CameraPath() {
   const { camera } = useThree();
   
-  // 3D Spline passing through 8 sections
+  // 3D Spline passing through 9 sections
   const curve = useMemo(() => {
     return new THREE.CatmullRomCurve3([
       new THREE.Vector3(0, 0, 10),      // 0: Hero
@@ -18,8 +18,9 @@ export default function CameraPath() {
       new THREE.Vector3(2, 5, -50),     // 3: Section C (Molecular Cluster)
       new THREE.Vector3(-4, 0, -70),    // 4: Section D (Medical Node)
       new THREE.Vector3(4, -3, -90),    // 5: Section E (Command Center)
-      new THREE.Vector3(0, 0, -110),    // 6: Section F (Tech Stack Physics Cluster)
-      new THREE.Vector3(0, 0, -130),    // 7: Section G (Contact Page)
+      new THREE.Vector3(-3, 2, -110),   // 6: Section F (Forensics Lab)
+      new THREE.Vector3(0, 0, -130),    // 7: Section G (Tech Stack Physics Cluster)
+      new THREE.Vector3(0, 0, -150),    // 8: Section H (Contact Page)
     ], false, "catmullrom", 0.5);
   }, []);
 

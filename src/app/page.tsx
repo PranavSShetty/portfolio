@@ -17,6 +17,7 @@ const SECTIONS = [
   { name: "MOLECULAR", id: "molecular" },
   { name: "MEDICAL", id: "medical" },
   { name: "COMMAND", id: "command" },
+  { name: "FORENSICS", id: "forensics" },
   { name: "TECH STACK", id: "techstack" },
   { name: "CONTACT", id: "contact" }
 ];
@@ -46,6 +47,22 @@ export default function Home() {
   const [terminalPhase, setTerminalPhase] = useState<"hacking" | "success">("hacking");
   const [projectsDropdownOpen, setProjectsDropdownOpen] = useState(false);
   const loaderRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Click/touch outside handler to close dropdown seamlessly on mobile and desktop
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setProjectsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("touchstart", handleOutsideClick);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("touchstart", handleOutsideClick);
+    };
+  }, []);
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -150,7 +167,7 @@ export default function Home() {
   };
 
   return (
-    <main ref={containerRef} className="relative w-full h-[800vh] bg-[#050505] text-white overflow-x-hidden">
+    <main ref={containerRef} className="relative w-full h-[900vh] bg-[#050505] text-white overflow-x-hidden">
       {/* 3D Canvas - Fixed Background */}
       <div className="fixed top-0 left-0 w-full h-screen z-0">
         <Canvas 
@@ -261,14 +278,18 @@ export default function Home() {
 
         {/* PROJECTS Trigger Wrapper with Glassmorphic Dropdown */}
         <div 
+          ref={dropdownRef}
           className="relative"
           onMouseEnter={() => setProjectsDropdownOpen(true)}
           onMouseLeave={() => setProjectsDropdownOpen(false)}
         >
           <button
-            onClick={() => handleNavClick(1)} // Scroll to first project on direct click
+            onClick={(e) => {
+              e.stopPropagation();
+              setProjectsDropdownOpen(!projectsDropdownOpen);
+            }}
             className={`px-3 py-1 text-[9px] md:text-xs font-mono tracking-widest uppercase transition-all duration-300 rounded-full border flex items-center gap-1 md:gap-1.5 ${
-              activeSection >= 1 && activeSection <= 5
+              activeSection >= 1 && activeSection <= 6
                 ? "bg-cyan-500/10 border-cyan-500/50 text-cyan-400 font-bold shadow-[0_0_10px_rgba(0,255,255,0.2)]"
                 : "border-transparent text-gray-500 hover:text-white"
             }`}
@@ -288,7 +309,7 @@ export default function Home() {
                 : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
             }`}
           >
-            {SECTIONS.slice(1, 6).map((sec, subIdx) => {
+            {SECTIONS.slice(1, 7).map((sec, subIdx) => {
               const idx = subIdx + 1; // actual index in main scroll
               const isActive = activeSection === idx;
               return (
@@ -312,8 +333,8 @@ export default function Home() {
         </div>
 
         {/* TECH STACK & CONTACT */}
-        {SECTIONS.slice(6).map((sec, idx) => {
-          const mainIdx = idx + 6;
+        {SECTIONS.slice(7).map((sec, idx) => {
+          const mainIdx = idx + 7;
           return (
             <button
               key={sec.id}
@@ -328,16 +349,19 @@ export default function Home() {
             </button>
           );
         })}
-      </nav>
-
-      {/* HTML Overlays over the scroll */}
+      </nav>      {/* HTML Overlays over the scroll */}
       <div className="relative z-10 w-full h-full pointer-events-none">
         
         {/* HERO SECTION */}
-        <section id="hero" className="h-screen flex flex-col items-center justify-center pointer-events-auto px-4 md:px-6 relative">
+        <section 
+          id="hero" 
+          className={`h-screen flex flex-col items-center justify-center pointer-events-auto px-4 md:px-6 relative transition-all duration-1000 ease-out transform ${
+            activeSection === 0 ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-10 scale-95 pointer-events-none"
+          }`}
+        >
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />
           
-          <div className="z-10 flex flex-col items-center text-center w-full max-w-4xl backdrop-blur-sm bg-black/20 p-8 md:p-12 rounded-3xl border border-white/5 shadow-2xl">
+          <div className="z-10 flex flex-col items-center text-center w-full max-w-4xl backdrop-blur-sm bg-black/25 p-8 md:p-12 rounded-3xl border border-white/5 shadow-2xl">
             <h1 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-gray-300 to-gray-600 mb-4 animate-fade-in" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
               PRANAV S. SHETTY
             </h1>
@@ -364,7 +388,7 @@ export default function Home() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
               </a>
               <button 
-                onClick={() => handleNavClick(7)} 
+                onClick={() => handleNavClick(8)} 
                 className="p-3 bg-white/5 rounded-full hover:bg-cyan-500/20 hover:text-cyan-400 transition-all border border-white/10 hover:border-cyan-500/50 pointer-events-auto cursor-pointer"
               >
                 <Mail size={24} />
@@ -383,8 +407,13 @@ export default function Home() {
         </section>
         
         {/* SECTION A: Transformer Lab */}
-        <section id="transformer" className="h-screen flex items-center justify-start px-6 md:px-24 pointer-events-none">
-          <div className="max-w-xl backdrop-blur-md bg-black/40 p-8 md:p-10 rounded-2xl border border-cyan-500/20 shadow-[0_0_40px_rgba(0,255,255,0.05)] hover:shadow-[0_0_60px_rgba(0,255,255,0.1)] transition-all pointer-events-auto">
+        <section 
+          id="transformer" 
+          className={`h-screen flex items-center justify-start px-6 md:px-24 pointer-events-none transition-all duration-1000 ease-out transform ${
+            activeSection === 1 ? "opacity-100 translate-x-0 scale-100" : "opacity-0 -translate-x-10 scale-95 pointer-events-none"
+          }`}
+        >
+          <div className="max-w-xl backdrop-blur-md bg-black/45 p-8 md:p-10 rounded-2xl border border-cyan-500/20 shadow-[0_0_40px_rgba(0,255,255,0.05)] hover:shadow-[0_0_60px_rgba(0,255,255,0.1)] transition-all pointer-events-auto">
             <div className="flex items-center gap-3 mb-4 md:mb-6 text-cyan-400">
               <Cpu size={28} />
               <span className="font-mono tracking-wider opacity-80 uppercase text-xs md:text-sm">Research &bull; AIDE 2026</span>
@@ -402,12 +431,21 @@ export default function Home() {
               <span className="px-3 py-1 bg-cyan-900/30 text-cyan-300 text-xs font-mono rounded-md border border-cyan-500/20">Transformers</span>
               <span className="px-3 py-1 bg-cyan-900/30 text-cyan-300 text-xs font-mono rounded-md border border-cyan-500/20">NLP</span>
             </div>
+            <a href="https://github.com/PranavSShetty/TulutoEnglishCodepart" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 text-cyan-400 rounded-lg font-mono text-xs tracking-wider hover:bg-cyan-500/20 transition-all border border-cyan-500/20 hover:border-cyan-500/40 hover:shadow-[0_0_15px_rgba(0,255,255,0.15)]">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+              View on GitHub
+            </a>
           </div>
         </section>
-
+ 
         {/* SECTION B: Adversarial Vault */}
-        <section id="adversarial" className="h-screen flex items-center justify-end px-6 md:px-24 pointer-events-none">
-          <div className="max-w-xl backdrop-blur-md bg-black/40 p-8 md:p-10 rounded-2xl border border-red-500/20 shadow-[0_0_40px_rgba(255,0,0,0.05)] hover:shadow-[0_0_60px_rgba(255,0,0,0.1)] transition-all text-left md:text-right pointer-events-auto w-full md:w-auto">
+        <section 
+          id="adversarial" 
+          className={`h-screen flex items-center justify-end px-6 md:px-24 pointer-events-none transition-all duration-1000 ease-out transform ${
+            activeSection === 2 ? "opacity-100 translate-x-0 scale-100" : "opacity-0 translate-x-10 scale-95 pointer-events-none"
+          }`}
+        >
+          <div className="max-w-xl backdrop-blur-md bg-black/45 p-8 md:p-10 rounded-2xl border border-red-500/20 shadow-[0_0_40px_rgba(255,0,0,0.05)] hover:shadow-[0_0_60px_rgba(255,0,0,0.1)] transition-all text-left md:text-right pointer-events-auto w-full md:w-auto">
             <div className="flex items-center md:justify-end gap-3 mb-4 md:mb-6 text-red-500">
               <span className="font-mono tracking-wider opacity-80 uppercase text-xs md:text-sm">IEEE ICAIC 2026</span>
               <ShieldAlert size={28} className="hidden md:block" />
@@ -425,12 +463,23 @@ export default function Home() {
               <span className="px-3 py-1 bg-red-900/30 text-red-300 text-xs font-mono rounded-md border border-red-500/20">WGAN-GP</span>
               <span className="px-3 py-1 bg-red-900/30 text-red-300 text-xs font-mono rounded-md border border-red-500/20">Cryptography</span>
             </div>
+            <div className="flex md:justify-end">
+              <a href="https://github.com/PranavSShetty/film-wgan-password-generation" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-400 rounded-lg font-mono text-xs tracking-wider hover:bg-red-500/20 transition-all border border-red-500/20 hover:border-red-500/40 hover:shadow-[0_0_15px_rgba(255,0,0,0.15)]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+                View on GitHub
+              </a>
+            </div>
           </div>
         </section>
-
+ 
         {/* SECTION C: Molecular Cluster */}
-        <section id="molecular" className="h-screen flex items-center justify-start px-6 md:px-24 pointer-events-none">
-          <div className="max-w-xl backdrop-blur-md bg-black/40 p-8 md:p-10 rounded-2xl border border-green-500/20 shadow-[0_0_40px_rgba(0,255,100,0.05)] hover:shadow-[0_0_60px_rgba(0,255,100,0.1)] transition-all pointer-events-auto">
+        <section 
+          id="molecular" 
+          className={`h-screen flex items-center justify-start px-6 md:px-24 pointer-events-none transition-all duration-1000 ease-out transform ${
+            activeSection === 3 ? "opacity-100 translate-x-0 scale-100" : "opacity-0 -translate-x-10 scale-95 pointer-events-none"
+          }`}
+        >
+          <div className="max-w-xl backdrop-blur-md bg-black/45 p-8 md:p-10 rounded-2xl border border-green-500/20 shadow-[0_0_40px_rgba(0,255,100,0.05)] hover:shadow-[0_0_60px_rgba(0,255,100,0.1)] transition-all pointer-events-auto">
             <div className="flex items-center gap-3 mb-4 md:mb-6 text-green-400">
               <Network size={28} />
               <span className="font-mono tracking-wider opacity-80 uppercase text-xs md:text-sm">Research &bull; AICCoNS 2026</span>
@@ -450,10 +499,15 @@ export default function Home() {
             </div>
           </div>
         </section>
-
+ 
         {/* SECTION D: Medical Node */}
-        <section id="medical" className="h-screen flex items-center justify-end px-6 md:px-24 pointer-events-none">
-          <div className="max-w-xl backdrop-blur-md bg-black/40 p-8 md:p-10 rounded-2xl border border-pink-500/20 shadow-[0_0_40px_rgba(255,0,150,0.05)] hover:shadow-[0_0_60px_rgba(255,0,150,0.1)] transition-all text-left md:text-right pointer-events-auto w-full md:w-auto">
+        <section 
+          id="medical" 
+          className={`h-screen flex items-center justify-end px-6 md:px-24 pointer-events-none transition-all duration-1000 ease-out transform ${
+            activeSection === 4 ? "opacity-100 translate-x-0 scale-100" : "opacity-0 translate-x-10 scale-95 pointer-events-none"
+          }`}
+        >
+          <div className="max-w-xl backdrop-blur-md bg-black/45 p-8 md:p-10 rounded-2xl border border-pink-500/20 shadow-[0_0_40px_rgba(255,0,150,0.05)] hover:shadow-[0_0_60px_rgba(255,0,150,0.1)] transition-all text-left md:text-right pointer-events-auto w-full md:w-auto">
             <div className="flex items-center md:justify-end gap-3 mb-4 md:mb-6 text-pink-400">
               <span className="font-mono tracking-wider opacity-80 uppercase text-xs md:text-sm">Active Project</span>
               <Activity size={28} className="hidden md:block" />
@@ -473,10 +527,15 @@ export default function Home() {
             </div>
           </div>
         </section>
-
+ 
         {/* SECTION E: Command Center */}
-        <section id="command" className="h-screen flex items-center justify-start px-6 md:px-24 pointer-events-none">
-          <div className="max-w-xl backdrop-blur-md bg-black/40 p-8 md:p-10 rounded-2xl border border-purple-500/20 shadow-[0_0_40px_rgba(150,0,255,0.05)] hover:shadow-[0_0_60px_rgba(150,0,255,0.1)] transition-all pointer-events-auto">
+        <section 
+          id="command" 
+          className={`h-screen flex items-center justify-start px-6 md:px-24 pointer-events-none transition-all duration-1000 ease-out transform ${
+            activeSection === 5 ? "opacity-100 translate-x-0 scale-100" : "opacity-0 -translate-x-10 scale-95 pointer-events-none"
+          }`}
+        >
+          <div className="max-w-xl backdrop-blur-md bg-black/45 p-8 md:p-10 rounded-2xl border border-purple-500/20 shadow-[0_0_40px_rgba(150,0,255,0.05)] hover:shadow-[0_0_60px_rgba(150,0,255,0.1)] transition-all pointer-events-auto">
             <div className="flex items-center gap-3 mb-4 md:mb-6 text-purple-400">
               <Terminal size={28} />
               <span className="font-mono tracking-wider opacity-80 uppercase text-xs md:text-sm">Engineering &bull; Torsecure Cyber</span>
@@ -494,11 +553,59 @@ export default function Home() {
               <span className="px-3 py-1 bg-purple-900/30 text-purple-300 text-xs font-mono rounded-md border border-purple-500/20">MySQL</span>
               <span className="px-3 py-1 bg-purple-900/30 text-purple-300 text-xs font-mono rounded-md border border-purple-500/20">Security Analysis</span>
             </div>
+            <a href="https://github.com/PranavSShetty/College-Stationary-Management" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 text-purple-400 rounded-lg font-mono text-xs tracking-wider hover:bg-purple-500/20 transition-all border border-purple-500/20 hover:border-purple-500/40 hover:shadow-[0_0_15px_rgba(150,0,255,0.15)]">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+              View on GitHub
+            </a>
           </div>
         </section>
-
-        {/* SECTION F: Tech Stack (Interactive balls in background) */}
-        <section id="techstack" className="h-screen flex flex-col items-center justify-start pt-32 px-6 pointer-events-none">
+ 
+        {/* SECTION F: Forensics Lab (Onyx Forensics) */}
+        <section 
+          id="forensics" 
+          className={`h-screen flex items-center justify-end px-6 md:px-24 pointer-events-none transition-all duration-1000 ease-out transform ${
+            activeSection === 6 ? "opacity-100 translate-x-0 scale-100" : "opacity-0 translate-x-10 scale-95 pointer-events-none"
+          }`}
+        >
+          <div className="max-w-xl backdrop-blur-md bg-black/45 p-8 md:p-10 rounded-2xl border border-orange-500/20 shadow-[0_0_40px_rgba(255,140,0,0.05)] hover:shadow-[0_0_60px_rgba(255,140,0,0.1)] transition-all text-left md:text-right pointer-events-auto w-full md:w-auto">
+            <div className="flex items-center md:justify-end gap-3 mb-4 md:mb-6 text-orange-400">
+              <span className="font-mono tracking-wider opacity-80 uppercase text-xs md:text-sm">Open Source &bull; Deployed</span>
+              <ShieldAlert size={28} className="hidden md:block" />
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold mb-4 md:mb-6 text-white" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
+              Forensics Lab
+            </h2>
+            <h3 className="text-lg md:text-xl text-gray-300 mb-4 font-medium">Onyx Forensics Platform</h3>
+            <p className="text-gray-400 leading-relaxed mb-6 md:mb-8 text-sm md:text-base">
+              A comprehensive digital forensics investigation platform built with TypeScript. 
+              Features advanced evidence analysis tools, forensic workflow management, 
+              real-time threat intelligence dashboards, and automated incident response pipelines.
+            </p>
+            <div className="flex flex-wrap gap-2 md:justify-end mb-6">
+              <span className="px-3 py-1 bg-orange-900/30 text-orange-300 text-xs font-mono rounded-md border border-orange-500/20">TypeScript</span>
+              <span className="px-3 py-1 bg-orange-900/30 text-orange-300 text-xs font-mono rounded-md border border-orange-500/20">Next.js</span>
+              <span className="px-3 py-1 bg-orange-900/30 text-orange-300 text-xs font-mono rounded-md border border-orange-500/20">Digital Forensics</span>
+            </div>
+            <div className="flex flex-wrap gap-3 md:justify-end">
+              <a href="https://github.com/PranavSShetty/onyxforensics" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/10 text-orange-400 rounded-lg font-mono text-xs tracking-wider hover:bg-orange-500/20 transition-all border border-orange-500/20 hover:border-orange-500/40 hover:shadow-[0_0_15px_rgba(255,140,0,0.15)]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+                View on GitHub
+              </a>
+              <a href="https://onyxforensics.vercel.app" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/10 text-orange-400 rounded-lg font-mono text-xs tracking-wider hover:bg-orange-500/20 transition-all border border-orange-500/20 hover:border-orange-500/40 hover:shadow-[0_0_15px_rgba(255,140,0,0.15)]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                Live Demo
+              </a>
+            </div>
+          </div>
+        </section>
+ 
+        {/* SECTION G: Tech Stack (Interactive balls in background) */}
+        <section 
+          id="techstack" 
+          className={`h-screen flex flex-col items-center justify-start pt-32 px-6 pointer-events-none transition-all duration-1000 ease-out transform ${
+            activeSection === 7 ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-10 scale-95 pointer-events-none"
+          }`}
+        >
           <div className="text-center mb-10 z-10">
             <h2 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
               MY TECH STACK
@@ -506,70 +613,173 @@ export default function Home() {
             <p className="text-gray-400 max-w-md mx-auto">Interact with the physics cluster. Hover to scatter.</p>
           </div>
         </section>
+ 
+        {/* SECTION H: Contact Page (Cinematic Cybernetic Dashboard & Terminal) */}
+        <section 
+          id="contact" 
+          className={`h-[100vh] flex items-center justify-center px-4 md:px-6 pointer-events-none transition-all duration-1000 ease-out transform ${
+            activeSection === 8 ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-10 scale-95 pointer-events-none"
+          }`}
+        >
+          <div className="w-full max-w-5xl backdrop-blur-md bg-black/65 p-6 md:p-10 rounded-2xl border border-cyan-500/25 shadow-[0_0_50px_rgba(0,255,255,0.06)] hover:shadow-[0_0_80px_rgba(0,255,255,0.12)] transition-all duration-500 pointer-events-auto relative overflow-hidden">
+            
+            {/* Ambient Background Grid Line */}
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.15)_50%)] bg-[size:100%_4px] pointer-events-none opacity-40" />
+            
+            {/* Header Terminal bar */}
+            <div className="flex justify-between items-center border-b border-cyan-500/20 pb-4 mb-6 md:mb-8 text-xs tracking-wider">
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 bg-cyan-500 rounded-full animate-ping" />
+                <span className="text-cyan-400 font-mono font-bold uppercase tracking-widest text-[10px] md:text-xs">SECURE_CHANNEL://PORT_2026.bin</span>
+              </div>
+              <div className="flex items-center gap-4 text-gray-500 font-mono text-[9px] md:text-xs hidden sm:flex">
+                <span>STATUS: ACTIVE</span>
+                <span>ENC: AES-256</span>
+              </div>
+            </div>
 
-        {/* SECTION G: Contact Page */}
-        <section id="contact" className="h-[100vh] flex items-center justify-center px-4 md:px-6 pointer-events-none">
-          <div className="w-full max-w-4xl backdrop-blur-md bg-black/60 p-8 md:p-16 rounded-3xl border border-white/10 shadow-2xl pointer-events-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-              <div>
-                <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
-                  Initiate<br/>Handshake
-                </h2>
-                <p className="text-gray-400 mb-8 leading-relaxed">
-                  Whether you're looking to discuss AI research, collaborate on a secure infrastructure project, or just talk tech—my inbox is open.
-                </p>
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 md:gap-12 relative z-10">
+              
+              {/* Left Column: Handshake Details & Tech Diagnostics (2/5 cols) */}
+              <div className="lg:col-span-2 flex flex-col justify-between space-y-6 md:space-y-8">
+                <div>
+                  <span className="text-[10px] font-mono bg-cyan-900/30 text-cyan-300 border border-cyan-500/20 px-2 py-0.5 rounded uppercase tracking-widest mb-3 inline-block">SECURE HANDSHAKE</span>
+                  <h2 className="text-3xl md:text-5xl font-black mb-4 md:mb-6 text-white leading-tight uppercase tracking-tight" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
+                    ESTABLISH<br/>
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-300 to-indigo-400 drop-shadow-[0_0_15px_rgba(0,255,255,0.15)]">CONNECTION</span>
+                  </h2>
+                  <p className="text-gray-400 leading-relaxed text-sm md:text-base">
+                    Choose a secure transmission protocol below to initiate direct communication regarding artificial intelligence research, software engineering, or technical infrastructure.
+                  </p>
+                </div>
                 
-                <div className="space-y-6">
-                  <div className="flex items-center gap-4 text-gray-300 hover:text-cyan-400 transition-colors">
-                    <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center border border-white/10">
-                      <Mail size={20} />
+                {/* Diagnostic HUD Elements (Simulated live telemetry) */}
+                <div className="bg-cyan-950/15 border border-cyan-500/10 rounded-xl p-4 space-y-3 font-mono text-[10px] text-cyan-300/80">
+                  <div className="flex justify-between border-b border-cyan-500/10 pb-1.5 mb-1.5 text-cyan-400 font-bold tracking-wider">
+                    <span>CONSOLE_DIAGNOSTICS</span>
+                    <span className="animate-pulse">● LIVE_FEED</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>GATEWAY:</span>
+                    <span className="text-white">PRANAV_PORTFOLIO_NODE_01</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>SOCKET LATENCY:</span>
+                    <span className="text-green-400">12ms [STABLE]</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>BANDWIDTH:</span>
+                    <span className="text-white">641.8 Mb/s</span>
+                  </div>
+                  {/* Staggered loading graph */}
+                  <div className="w-full bg-cyan-950/60 h-1.5 rounded overflow-hidden mt-2 relative border border-cyan-500/10">
+                    <div className="bg-gradient-to-r from-cyan-500 to-teal-400 h-full animate-[shimmer_2.5s_infinite]" style={{ width: '78%' }}></div>
+                  </div>
+                </div>
+
+                {/* Secure Links */}
+                <div className="space-y-4">
+                  <a 
+                    href="mailto:studytimemail24@gmail.com" 
+                    className="flex items-center gap-4 group p-3 rounded-xl bg-white/5 border border-white/5 hover:border-cyan-500/30 hover:bg-cyan-950/10 hover:shadow-[0_0_20px_rgba(0,255,255,0.05)] transition-all duration-300"
+                  >
+                    <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center border border-white/10 group-hover:border-cyan-500/30 group-hover:text-cyan-400 transition-all">
+                      <Mail size={18} />
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Email Protocol</p>
-                      <a href="mailto:studytimemail24@gmail.com" className="font-mono">studytimemail24@gmail.com</a>
+                      <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Email Protocol</p>
+                      <p className="font-mono text-xs md:text-sm text-gray-300 group-hover:text-white transition-colors">studytimemail24@gmail.com</p>
                     </div>
-                  </div>
+                  </a>
                   
-                  <div className="flex items-center gap-4 text-gray-300 hover:text-cyan-400 transition-colors">
-                    <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center border border-white/10">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
+                  <a 
+                    href="https://linkedin.com/in/pranav-s-shetty-b69308260" 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    className="flex items-center gap-4 group p-3 rounded-xl bg-white/5 border border-white/5 hover:border-cyan-500/30 hover:bg-cyan-950/10 hover:shadow-[0_0_20px_rgba(0,255,255,0.05)] transition-all duration-300"
+                  >
+                    <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center border border-white/10 group-hover:border-cyan-500/30 group-hover:text-cyan-400 transition-all">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">LinkedIn Network</p>
-                      <a href="https://linkedin.com/in/pranav-s-shetty-b69308260" target="_blank" rel="noreferrer" className="font-mono">in/pranav-s-shetty</a>
+                      <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">LinkedIn Network</p>
+                      <p className="font-mono text-xs md:text-sm text-gray-300 group-hover:text-white transition-colors">in/pranav-s-shetty</p>
                     </div>
-                  </div>
+                  </a>
                 </div>
               </div>
               
-              <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-                <div>
-                  <label className="block text-xs font-mono text-gray-500 uppercase tracking-widest mb-2">Target ID / Name</label>
-                  <input type="text" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500 focus:bg-cyan-500/5 transition-all" placeholder="John Doe" />
+              {/* Right Column: High-Tech Cyber Console Visual (3/5 cols) */}
+              <div className="lg:col-span-3 bg-cyan-950/5 border border-cyan-500/15 p-6 md:p-8 rounded-2xl relative flex flex-col justify-between overflow-hidden group shadow-[inset_0_0_30px_rgba(0,255,255,0.02)]">
+                
+                {/* Visual Top Decorator */}
+                <div className="absolute top-0 right-8 -translate-y-1/2 bg-cyan-950 border border-cyan-500/30 px-3 py-0.5 rounded font-mono text-[9px] text-cyan-400 font-bold uppercase tracking-wider">
+                  ACTIVE_LINK_TUNNEL
                 </div>
-                <div>
-                  <label className="block text-xs font-mono text-gray-500 uppercase tracking-widest mb-2">Return Address / Email</label>
-                  <input type="email" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500 focus:bg-cyan-500/5 transition-all" placeholder="john@company.com" />
+
+                {/* Simulated Decrypting Cyber Terminal Feed */}
+                <div className="space-y-4 font-mono text-xs text-cyan-400/90 w-full">
+                  <div className="border-b border-cyan-500/10 pb-3 flex justify-between items-center text-[10px] font-bold text-cyan-300">
+                    <span>SECURITY CODES // LIVE STREAM</span>
+                    <span className="animate-pulse text-green-400">SYNCED</span>
+                  </div>
+
+                  <div className="space-y-2 h-64 overflow-y-auto scrollbar-none pr-2 text-[11px] leading-relaxed">
+                    <div className="text-gray-500">// INITIALIZING SECURE PACKET OVERRIDE...</div>
+                    <div className="flex justify-between text-green-400">
+                      <span>&gt; AES-256 SYMMETRIC HANDSHAKE</span>
+                      <span>[SUCCESS]</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>&gt; DECRYPTING SHA-256 SESSION KEY...</span>
+                      <span className="text-cyan-300">0x7FBC5E</span>
+                    </div>
+                    <div className="text-gray-500">// PARSING TRANSVERSE GEOMETRY COEFFICIENTS...</div>
+                    <div className="flex justify-between text-purple-400">
+                      <span>&gt; ESTABLISHING SHADER TRANSITION ROUTE</span>
+                      <span>[READY]</span>
+                    </div>
+                    <div className="flex justify-between text-indigo-400">
+                      <span>&gt; LERPIN SPLINE COORDINATES Z-150</span>
+                      <span>[OK]</span>
+                    </div>
+                    <div className="text-gray-500">// SECURING CONTACT PROTOCOL SOCKET...</div>
+                    <div className="flex justify-between text-cyan-300 animate-pulse">
+                      <span>&gt; PORT: 8080 CONNECTED -- INBOX LISTENING</span>
+                      <span>[LIVE]</span>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-mono text-gray-500 uppercase tracking-widest mb-2">Payload / Message</label>
-                  <textarea rows={4} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500 focus:bg-cyan-500/5 transition-all resize-none" placeholder="Initiating contact regarding..."></textarea>
+
+                {/* Interactive Decryption Key Visual */}
+                <div className="mt-6 border-t border-cyan-500/10 pt-4 flex flex-col gap-3 font-mono">
+                  <div className="flex justify-between items-center text-[10px] text-gray-500 uppercase tracking-wider">
+                    <span>System Session Signature</span>
+                    <span className="text-cyan-400 font-bold">ACTIVE</span>
+                  </div>
+                  <div className="bg-black/55 border border-cyan-500/20 p-3 rounded-lg flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <Terminal size={14} className="text-cyan-400 animate-pulse" />
+                      <span className="text-[10px] sm:text-xs text-gray-300 font-bold tracking-widest break-all">PRANAV_SECURE_AUTH_0x2A7E11D5B8</span>
+                    </div>
+                    <span className="hidden sm:block text-[8px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">SHA-256</span>
+                  </div>
                 </div>
-                <button className="w-full bg-cyan-500 text-black font-bold py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-cyan-400 transition-colors shadow-[0_0_20px_rgba(0,255,255,0.3)]">
-                  <Send size={18} /> Transmit Message
-                </button>
-              </form>
+
+              </div>
             </div>
             
-            <div className="mt-16 pt-8 border-t border-white/10 text-center flex flex-col items-center">
-              <p className="text-gray-500 text-sm font-mono flex items-center gap-2">
-                <ShieldAlert size={14} /> SECURE CONNECTION ESTABLISHED
+            {/* Terminal Footer */}
+            <div className="mt-8 md:mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
+              <p className="text-gray-500 text-[10px] md:text-xs font-mono flex items-center gap-2">
+                <ShieldCheck size={14} className="text-cyan-400 animate-pulse" /> 
+                SECURE AES-256 DIGITAL HANDSHAKE ESTABLISHED
               </p>
-              <p className="text-gray-600 mt-2 text-xs">© 2026 Pranav S Shetty. All rights reserved.</p>
+              <p className="text-gray-600 text-[10px] font-mono">© 2026 PRANAV S SHETTY. ALL SYSTEM PROTOCOLS INTACT.</p>
             </div>
           </div>
         </section>
-
+ 
       </div>
     </main>
   );

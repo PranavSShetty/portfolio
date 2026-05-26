@@ -2,8 +2,7 @@
 
 import { useRef, useState, useEffect, useMemo } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Physics, RigidBody, RapierRigidBody } from "@react-three/rapier";
-import { Environment, Float, Instance, Instances, MeshTransmissionMaterial, Edges, Text, Html, Line } from "@react-three/drei";
+import { Environment, Float, Edges, Text, Html, Line } from "@react-three/drei";
 import { EffectComposer, Bloom, ChromaticAberration, Glitch } from "@react-three/postprocessing";
 import { BlendFunction, GlitchMode } from "postprocessing";
 import * as THREE from "three";
@@ -12,6 +11,70 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import CameraPath from "./CameraPath";
 import MorphingCharacter from "./MorphingCharacter";
+import { Physics, RigidBody, RapierRigidBody } from "@react-three/rapier";
+import { MeshTransmissionMaterial } from "@react-three/drei";
+
+// GPU-Driven Space Embers (Molten gold dust particles floating in the void)
+function SpaceEmbers() {
+  const count = 400;
+  const pointsRef = useRef<THREE.Points>(null);
+
+  // Procedural float arrays for coordinates
+  const [positions, speeds] = useMemo(() => {
+    const pos = new Float32Array(count * 3);
+    const spd = new Float32Array(count);
+    for (let i = 0; i < count; i++) {
+      pos[i * 3] = (Math.random() - 0.5) * 55;      // X
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 55;  // Y
+      pos[i * 3 + 2] = -Math.random() * 160;        // Z (extends all along the spline)
+      spd[i] = 0.08 + Math.random() * 0.22;         // Speed
+    }
+    return [pos, spd];
+  }, []);
+
+  // Offload particle animations completely to the GPU via vertex attribute mutations
+  useFrame(({ clock }) => {
+    if (pointsRef.current) {
+      const time = clock.getElapsedTime();
+      const posAttr = pointsRef.current.geometry.attributes.position as THREE.BufferAttribute;
+      const array = posAttr.array as Float32Array;
+
+      for (let i = 0; i < count; i++) {
+        // Move particles forward in Z (towards the camera) or upward like embers
+        array[i * 3 + 2] += speeds[i] * 0.9; // Z drift
+        array[i * 3 + 1] += Math.sin(time + i) * 0.008; // Gentle Y float
+
+        // Wrap particles back when they get past the camera range
+        if (array[i * 3 + 2] > 20) {
+          array[i * 3 + 2] = -160;
+        }
+      }
+      posAttr.needsUpdate = true;
+      // Slight global rotation to make the dust feel alive
+      pointsRef.current.rotation.z = time * 0.01;
+    }
+  });
+
+  return (
+    <points ref={pointsRef}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          args={[positions, 3]}
+        />
+      </bufferGeometry>
+      <pointsMaterial
+        size={0.14}
+        color="#ffaa00"
+        transparent
+        opacity={0.65}
+        blending={THREE.AdditiveBlending}
+        sizeAttenuation={true}
+        depthWrite={false}
+      />
+    </points>
+  );
+}
 
 // Station 1: Transformer Lab (Layered Neural Network Architecture)
 function TransformerLab() {
@@ -55,22 +118,19 @@ function TransformerLab() {
     <group position={[5, 2, -10]} ref={groupRef}>
       {/* Central Attention Hub entity */}
       <Float speed={1.5} rotationIntensity={1} floatIntensity={1}>
-        <RigidBody type="fixed" colliders="ball">
-          <mesh>
-            <sphereGeometry args={[0.8, 32, 32]} />
-            <meshPhysicalMaterial 
-              transmission={0.8}
-              roughness={0.15}
-              metalness={0.1}
-              clearcoat={1.0}
-              clearcoatRoughness={0.1}
-              color="#00ffff"
-              transparent
-              opacity={0.8}
-            />
-            <Edges scale={1} threshold={15} color="#00ffff" />
-          </mesh>
-        </RigidBody>
+        <mesh>
+          <sphereGeometry args={[0.8, 32, 32]} />
+          <meshPhysicalMaterial 
+            roughness={0.1}
+            metalness={0.9}
+            clearcoat={1.0}
+            clearcoatRoughness={0.1}
+            color="#00ffff"
+            transparent
+            opacity={0.4}
+          />
+          <Edges scale={1} threshold={15} color="#00ffff" />
+        </mesh>
       </Float>
 
       {/* Layer 1 Nodes (Input) */}
@@ -115,6 +175,7 @@ function TransformerLab() {
 // Station 2: Adversarial Vault (Cyber/Hacker Core with floating code matrix)
 function AdversarialVault() {
   const codesRef = useRef<THREE.Group>(null);
+  const debrisRef = useRef<THREE.Group>(null);
 
   // Fake binary streams & hacker code tags
   const hackerTags = useMemo(() => [
@@ -128,11 +189,41 @@ function AdversarialVault() {
     { text: "ATTACK SYSTEM INITIALIZED", pos: [1.2, -3.5, 0] }
   ], []);
 
+  const debrisData = useMemo(() => {
+    return Array.from({ length: 15 }).map(() => ({
+      pos: new THREE.Vector3(
+        (Math.random() - 0.5) * 8,
+        (Math.random() - 0.5) * 8,
+        (Math.random() - 0.5) * 8
+      ),
+      scale: 0.3 + Math.random() * 0.4,
+      rotSpeed: new THREE.Vector3(
+        (Math.random() - 0.5) * 0.5,
+        (Math.random() - 0.5) * 0.5,
+        (Math.random() - 0.5) * 0.5
+      ),
+      seed: Math.random() * 100
+    }));
+  }, []);
+
   useFrame(({ clock }) => {
+    const time = clock.getElapsedTime();
     if (codesRef.current) {
       // Floating matrix code motion
       codesRef.current.children.forEach((child, i) => {
-        child.position.y += Math.sin(clock.getElapsedTime() + i) * 0.005;
+        child.position.y += Math.sin(time + i) * 0.003;
+      });
+    }
+
+    if (debrisRef.current) {
+      debrisRef.current.children.forEach((child, i) => {
+        const data = debrisData[i];
+        if (data) {
+          child.position.y = data.pos.y + Math.sin(time * 0.5 + data.seed) * 0.3;
+          child.position.x = data.pos.x + Math.cos(time * 0.3 + data.seed) * 0.2;
+          child.rotation.x = time * data.rotSpeed.x;
+          child.rotation.y = time * data.rotSpeed.y;
+        }
       });
     }
   });
@@ -141,29 +232,23 @@ function AdversarialVault() {
     <group position={[-5, -2, -30]}>
       {/* Central Cybersecurity Locked Core */}
       <Float speed={2} rotationIntensity={1.5}>
-        <RigidBody type="fixed" colliders="hull">
-          <mesh>
-            <boxGeometry args={[2.5, 2.5, 2.5]} />
-            <meshStandardMaterial color="#ff0033" emissive="#110000" roughness={0.1} metalness={0.9} />
-            <Edges scale={1.05} threshold={15} color="#ff0033" />
-          </mesh>
-        </RigidBody>
+        <mesh>
+          <boxGeometry args={[2.5, 2.5, 2.5]} />
+          <meshStandardMaterial color="#ff0033" emissive="#110000" roughness={0.1} metalness={0.9} />
+          <Edges scale={1.05} threshold={15} color="#ff0033" />
+        </mesh>
       </Float>
 
       {/* Floating hacking debris representing cracking attempts */}
-      {Array.from({ length: 15 }).map((_, i) => (
-        <RigidBody key={i} type="dynamic" position={[
-          (Math.random() - 0.5) * 8,
-          (Math.random() - 0.5) * 8,
-          (Math.random() - 0.5) * 8
-        ]}>
-          <mesh>
-            <boxGeometry args={[0.5, 0.5, 0.5]} />
+      <group ref={debrisRef}>
+        {debrisData.map((data, i) => (
+          <mesh key={i} position={data.pos}>
+            <boxGeometry args={[data.scale, data.scale, data.scale]} />
             <meshStandardMaterial color="#ff3300" emissive="#220500" metalness={0.8} />
             <Edges scale={1.02} threshold={15} color="#ff3300" />
           </mesh>
-        </RigidBody>
-      ))}
+        ))}
+      </group>
 
       {/* Floating hacker code tags in 3D */}
       <group ref={codesRef}>
@@ -229,7 +314,6 @@ function MolecularGraph() {
     // Outer chains (hydrogens and function groups)
     for (let i = 0; i < 6; i++) {
       const angle = (i * Math.PI) / 3;
-      // Alternate between simple H and a small chain
       if (i % 2 === 0) {
         const pos = new THREE.Vector3(Math.cos(angle) * 2.8, Math.sin(angle) * 2.8, 0.3);
         outerNodes.push(pos);
@@ -261,14 +345,13 @@ function MolecularGraph() {
         <mesh>
           <icosahedronGeometry args={[0.7, 1]} />
           <meshPhysicalMaterial 
-            transmission={0.8}
-            roughness={0.15}
-            metalness={0.1}
+            roughness={0.1}
+            metalness={0.9}
             clearcoat={1.0}
             clearcoatRoughness={0.1}
             color="#00ff88"
             transparent
-            opacity={0.8}
+            opacity={0.4}
           />
         </mesh>
       </Float>
@@ -276,7 +359,7 @@ function MolecularGraph() {
       {/* Carbon Atoms (Ring Nodes) */}
       {molecularStructure.ringNodes.map((pos, i) => (
         <mesh key={`ring-${i}`} position={pos}>
-          <sphereGeometry args={[0.24, 32, 32]} />
+          <sphereGeometry args={[0.24, 24, 24]} />
           <meshStandardMaterial color="#00ff88" emissive="#004411" metalness={0.9} roughness={0.1} />
         </mesh>
       ))}
@@ -284,7 +367,7 @@ function MolecularGraph() {
       {/* Side Atoms (Outer Nodes) */}
       {molecularStructure.outerNodes.map((pos, i) => (
         <mesh key={`out-${i}`} position={pos}>
-          <sphereGeometry args={[0.15, 32, 32]} />
+          <sphereGeometry args={[0.15, 24, 24]} />
           <meshStandardMaterial color="#ffffff" emissive="#333333" metalness={0.5} roughness={0.5} />
         </mesh>
       ))}
@@ -311,7 +394,7 @@ function MedicalNode() {
   useFrame(({ clock }) => {
     if (meshRef.current) {
       // Simulate Heartbeat pulse sequence (lub-dub rhythm)
-      const time = clock.getElapsedTime() * 1.5; // adjust pulse speed
+      const time = clock.getElapsedTime() * 1.5; 
       const beat = Math.sin(time * Math.PI);
       const lub = Math.pow(Math.max(0, beat), 8) * 0.18;
       const dub = Math.pow(Math.max(0, Math.sin((time - 0.25) * Math.PI)), 8) * 0.12;
@@ -325,12 +408,10 @@ function MedicalNode() {
   return (
     <group position={[-4, 0, -70]}>
       <Float speed={2} rotationIntensity={1} floatIntensity={1}>
-        <RigidBody type="fixed" colliders="hull">
-          <mesh ref={meshRef}>
-            <torusKnotGeometry args={[1.8, 0.45, 120, 16]} />
-            <meshStandardMaterial color="#ff0066" emissive="#770022" emissiveIntensity={1} wireframe />
-          </mesh>
-        </RigidBody>
+        <mesh ref={meshRef}>
+          <torusKnotGeometry args={[1.8, 0.45, 120, 16]} />
+          <meshStandardMaterial color="#ff0066" emissive="#770022" emissiveIntensity={1} wireframe />
+        </mesh>
       </Float>
     </group>
   );
@@ -349,43 +430,154 @@ function CommandCenter() {
     <group position={[4, -3, -90]}>
       {screens.map((scr, i) => (
         <Float key={i} speed={1.5} rotationIntensity={0.3} floatIntensity={0.5} position={scr.pos as [number, number, number]}>
-          <RigidBody type="fixed">
-            <group rotation={scr.rot as [number, number, number]}>
-              {/* Curved Hologram Screen Backing */}
-              <mesh>
-                <planeGeometry args={[2.8, 1.8]} />
-                <meshBasicMaterial color={scr.color} transparent opacity={0.12} side={THREE.DoubleSide} />
-                <Edges scale={1} threshold={15} color={scr.color} />
-              </mesh>
-              {/* Display text directly on terminal screen */}
+          <group rotation={scr.rot as [number, number, number]}>
+            {/* Curved Hologram Screen Backing */}
+            <mesh>
+              <planeGeometry args={[2.8, 1.8]} />
+              <meshBasicMaterial color={scr.color} transparent opacity={0.12} side={THREE.DoubleSide} />
+              <Edges scale={1} threshold={15} color={scr.color} />
+            </mesh>
+            {/* Display text directly on terminal screen */}
+            <Text
+              position={[-1.2, 0.6, 0.05]}
+              fontSize={0.14}
+              color={scr.color}
+              anchorX="left"
+            >
+              {`[ ${scr.title} ]`}
+            </Text>
+            {scr.items.map((item, idx) => (
               <Text
-                position={[-1.2, 0.6, 0.05]}
-                fontSize={0.14}
-                color={scr.color}
+                key={idx}
+                position={[-1.2, 0.2 - idx * 0.3, 0.05]}
+                fontSize={0.1}
+                color="#ffffff"
                 anchorX="left"
               >
-                {`[ ${scr.title} ]`}
+                {`> ${item}`}
               </Text>
-              {scr.items.map((item, idx) => (
-                <Text
-                  key={idx}
-                  position={[-1.2, 0.2 - idx * 0.3, 0.05]}
-                  fontSize={0.1}
-                  color="#ffffff"
-                  anchorX="left"
-                >
-                  {`> ${item}`}
-                </Text>
-              ))}
-            </group>
-          </RigidBody>
+            ))}
+          </group>
         </Float>
       ))}
     </group>
   );
 }
 
-// Station 6: Tech Stack Physics Cluster (Dynamic interactive spheres)
+// Station 6: Forensics Lab (Digital Evidence Scanner with Data Streams)
+function ForensicsLab() {
+  const groupRef = useRef<THREE.Group>(null);
+  const ringsRef = useRef<THREE.Group>(null);
+
+  // Evidence data streams floating around the scanner
+  const dataStreams = useMemo(() => [
+    { text: "EVIDENCE_ID: 0x4F6E7978", pos: [-3.5, 2.2, 0.5] },
+    { text: "HASH: SHA256_VERIFIED", pos: [3.2, -1.8, -0.5] },
+    { text: "TIMELINE: RECONSTRUCTED", pos: [-2.8, -2.8, 1] },
+    { text: "ARTIFACT: DISK_IMAGE_001", pos: [2.8, 2.5, 0] },
+    { text: "CHAIN_OF_CUSTODY: INTACT", pos: [-4, 0.5, -1.5] },
+    { text: "MEMORY_DUMP: ANALYZED", pos: [3.8, 0.2, 1] },
+  ], []);
+
+  useFrame(({ clock }) => {
+    const time = clock.getElapsedTime();
+    if (groupRef.current) {
+      groupRef.current.rotation.y = time * 0.12;
+    }
+    if (ringsRef.current) {
+      ringsRef.current.children.forEach((ring, i) => {
+        ring.rotation.x = time * (0.2 + i * 0.15);
+        ring.rotation.z = time * (0.1 + i * 0.1);
+      });
+    }
+  });
+
+  return (
+    <group position={[-3, 2, -110]} ref={groupRef}>
+      {/* Central Evidence Core (Magnifying lens) */}
+      <Float speed={1.5} rotationIntensity={0.8} floatIntensity={0.8}>
+        <mesh>
+          <sphereGeometry args={[1.0, 32, 32]} />
+          <meshPhysicalMaterial 
+            roughness={0.05}
+            metalness={0.95}
+            clearcoat={1.0}
+            clearcoatRoughness={0.05}
+            color="#ff8800"
+            transparent
+            opacity={0.35}
+          />
+          <Edges scale={1} threshold={15} color="#ff8800" />
+        </mesh>
+      </Float>
+
+      {/* Scanning Rings orbiting the core */}
+      <group ref={ringsRef}>
+        <mesh>
+          <torusGeometry args={[2.0, 0.04, 16, 64]} />
+          <meshStandardMaterial color="#ff8800" emissive="#ff4400" emissiveIntensity={2} />
+        </mesh>
+        <mesh rotation={[Math.PI / 3, 0, 0]}>
+          <torusGeometry args={[2.5, 0.03, 16, 64]} />
+          <meshStandardMaterial color="#ffaa00" emissive="#ff6600" emissiveIntensity={1.5} />
+        </mesh>
+        <mesh rotation={[0, Math.PI / 4, Math.PI / 6]}>
+          <torusGeometry args={[3.0, 0.025, 16, 64]} />
+          <meshStandardMaterial color="#ffcc44" emissive="#ff8800" emissiveIntensity={1} />
+        </mesh>
+      </group>
+
+      {/* Evidence nodes (file artifacts floating in orbit) */}
+      {Array.from({ length: 8 }).map((_, i) => {
+        const angle = (i / 8) * Math.PI * 2;
+        const radius = 2.2 + (i % 2) * 0.8;
+        return (
+          <mesh key={`ev-${i}`} position={[Math.cos(angle) * radius, Math.sin(angle) * radius, (Math.random() - 0.5) * 1.5]}>
+            <boxGeometry args={[0.25, 0.35, 0.05]} />
+            <meshStandardMaterial color="#ff8800" emissive="#441100" metalness={0.8} roughness={0.2} />
+            <Edges scale={1.05} threshold={15} color="#ffaa00" />
+          </mesh>
+        );
+      })}
+
+      {/* Forensic data stream text labels */}
+      {dataStreams.map((stream, i) => (
+        <Text
+          key={i}
+          position={stream.pos as [number, number, number]}
+          fontSize={0.2}
+          color="#ff8800"
+          maxWidth={4}
+          anchorX="center"
+          anchorY="middle"
+        >
+          {stream.text}
+        </Text>
+      ))}
+
+      {/* Holographic forensics console */}
+      <Html position={[0, -2.5, 2]} distanceFactor={8} transform occlude="blending">
+        <div className="bg-black/85 border border-orange-500/50 p-4 rounded-lg font-mono text-[9px] w-64 shadow-[0_0_20px_rgba(255,140,0,0.3)] select-none">
+          <div className="flex justify-between border-b border-orange-500/30 pb-1 mb-2 text-orange-500 font-bold">
+            <span>ONYX_FORENSICS // SCANNER</span>
+            <span className="animate-pulse">● ANALYZING</span>
+          </div>
+          <div className="space-y-1 text-orange-300">
+            <div>$ onyx --scan disk_image_001.dd</div>
+            <div>[OK] HASH INTEGRITY VERIFIED</div>
+            <div>[SCAN] ARTIFACTS: 2,847 RECOVERED</div>
+            <div className="text-green-400 font-bold animate-pulse">$ EVIDENCE CHAIN: VALIDATED</div>
+          </div>
+          <div className="mt-3 w-full bg-orange-950/50 h-1.5 rounded overflow-hidden border border-orange-500/20">
+            <div className="bg-orange-500 h-full animate-[shimmer_2s_infinite]" style={{ width: '92%' }}></div>
+          </div>
+        </div>
+      </Html>
+    </group>
+  );
+}
+
+// Station 7: Tech Stack Physics Cluster (Dynamic procedural spring-mass interactive spheres)
 const TECH_STACK = [
   "Python", "TensorFlow", "PyTorch", "React", "Next.js", 
   "Node.js", "Java", "SQL", "Docker", "AWS", "Tailwind", 
@@ -393,7 +585,7 @@ const TECH_STACK = [
 ];
 
 function TechStackCluster() {
-  const center = new THREE.Vector3(0, 0, -115);
+  const center = new THREE.Vector3(0, 0, -130); // Position matching new 900vh scroll index
   return (
     <group>
       {TECH_STACK.map((tech, i) => (
@@ -434,7 +626,7 @@ function PhysicsBall({ tech, index, center }: { tech: string, index: number, cen
         (Math.random() - 0.5) * 35,
         (Math.random() - 0.5) * 35
       );
-      api.current.applyImpulse(scatterDir, true);
+      api.current.applyImpulse({ x: scatterDir.x, y: scatterDir.y, z: scatterDir.z }, true);
     }
   };
 
@@ -442,19 +634,21 @@ function PhysicsBall({ tech, index, center }: { tech: string, index: number, cen
     <RigidBody ref={api} type="dynamic" colliders="ball" position={initialPos} restitution={0.8}>
       <mesh onPointerEnter={handlePointerEnter} onPointerMove={handlePointerEnter}>
         <sphereGeometry args={[1.2, 32, 32]} />
-        <meshPhysicalMaterial 
-          transmission={0.8}
-          roughness={0.15}
-          metalness={0.1}
-          clearcoat={1.0}
-          clearcoatRoughness={0.1}
+        <MeshTransmissionMaterial 
+          samples={4}
+          thickness={0.2}
+          chromaticAberration={0.5}
+          anisotropy={0.1}
+          distortion={0}
+          distortionScale={0}
+          temporalDistortion={0}
           color={index % 2 === 0 ? "#00ffff" : "#ff00ff"}
-          transparent
           opacity={0.8}
+          transparent
         />
       </mesh>
       <Html distanceFactor={10} position={[0, 0, 0]} pointerEvents="none">
-        <div className="select-none text-[10px] font-bold bg-black/50 backdrop-blur-sm px-2 py-1 rounded-full border border-white/20 whitespace-nowrap">
+        <div className="select-none text-[10px] font-bold bg-black/50 backdrop-blur-sm px-2 py-1 rounded-full border border-white/20 whitespace-nowrap text-cyan-400">
           {tech}
         </div>
       </Html>
@@ -507,7 +701,6 @@ function RoboticGate({ open }: { open: boolean }) {
     }
   }, [open]);
 
-  // Generate radial rivets/bolts for the high-tech outer ring
   const rivets = useMemo(() => {
     return Array.from({ length: 12 }).map((_, i) => {
       const angle = (i / 12) * Math.PI * 2;
@@ -520,14 +713,13 @@ function RoboticGate({ open }: { open: boolean }) {
     <group position={[0, 0, 8.3]}>
       {/* LEFT HALF OF THE HEAVY VAULT DOOR */}
       <group ref={leftGateRef} position={[-1.7, 0, 0]}>
-        {/* Left Armored Plate (Slightly Beveled Beams) */}
+        {/* Left Armored Plate */}
         <mesh position={[0, 0, 0]}>
           <boxGeometry args={[3.4, 4.8, 0.25]} />
           <meshStandardMaterial color="#1a222a" roughness={0.4} metalness={0.7} />
           <Edges scale={1} threshold={15} color="#00ffff" />
         </mesh>
         
-        {/* Beveled Top/Bottom Trim Elements for Octagonal shape */}
         <mesh position={[0.7, 2.2, 0.15]} rotation={[0, 0, -Math.PI / 4]}>
           <boxGeometry args={[1.5, 0.2, 0.2]} />
           <meshStandardMaterial color="#2d3741" roughness={0.3} metalness={0.8} />
@@ -537,21 +729,18 @@ function RoboticGate({ open }: { open: boolean }) {
           <meshStandardMaterial color="#2d3741" roughness={0.3} metalness={0.8} />
         </mesh>
 
-        {/* Heavy Left Column/Hinges */}
         <mesh position={[-1.6, 0, 0.2]}>
           <cylinderGeometry args={[0.22, 0.22, 4.6, 16]} />
           <meshStandardMaterial color="#4f5d6b" roughness={0.15} metalness={0.9} />
           <Edges scale={1.02} threshold={15} color="#00ffff" />
         </mesh>
 
-        {/* Heavy Locking Side Clamp (Fitted block on column) */}
         <mesh position={[-1.8, 0, 0.2]}>
           <boxGeometry args={[0.6, 0.8, 0.7]} />
           <meshStandardMaterial color="#2a333d" roughness={0.3} metalness={0.8} />
           <Edges scale={1.02} threshold={15} color="#00ffff" />
         </mesh>
         
-        {/* Cylindrical locking bar connecting inside clamp */}
         <mesh position={[-1.6, 1.2, 0.2]} rotation={[Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[0.15, 0.15, 0.4, 16]} />
           <meshStandardMaterial color="#7f8c8d" metalness={0.9} roughness={0.1} />
@@ -564,14 +753,12 @@ function RoboticGate({ open }: { open: boolean }) {
 
       {/* RIGHT HALF OF THE HEAVY VAULT DOOR */}
       <group ref={rightGateRef} position={[1.7, 0, 0]}>
-        {/* Right Armored Plate */}
         <mesh position={[0, 0, 0]}>
           <boxGeometry args={[3.4, 4.8, 0.25]} />
           <meshStandardMaterial color="#1a222a" roughness={0.4} metalness={0.7} />
           <Edges scale={1} threshold={15} color="#00ffff" />
         </mesh>
 
-        {/* Beveled Top/Bottom Trim Elements for Octagonal shape */}
         <mesh position={[-0.7, 2.2, 0.15]} rotation={[0, 0, Math.PI / 4]}>
           <boxGeometry args={[1.5, 0.2, 0.2]} />
           <meshStandardMaterial color="#2d3741" roughness={0.3} metalness={0.8} />
@@ -581,21 +768,18 @@ function RoboticGate({ open }: { open: boolean }) {
           <meshStandardMaterial color="#2d3741" roughness={0.3} metalness={0.8} />
         </mesh>
 
-        {/* Heavy Right Column/Hinges */}
         <mesh position={[1.6, 0, 0.2]}>
           <cylinderGeometry args={[0.22, 0.22, 4.6, 16]} />
           <meshStandardMaterial color="#4f5d6b" roughness={0.15} metalness={0.9} />
           <Edges scale={1.02} threshold={15} color="#00ffff" />
         </mesh>
 
-        {/* Heavy Locking Side Clamp */}
         <mesh position={[1.8, 0, 0.2]}>
           <boxGeometry args={[0.6, 0.8, 0.7]} />
           <meshStandardMaterial color="#2a333d" roughness={0.3} metalness={0.8} />
           <Edges scale={1.02} threshold={15} color="#00ffff" />
         </mesh>
 
-        {/* Cylindrical locking bar connecting inside clamp */}
         <mesh position={[1.6, 1.2, 0.2]} rotation={[Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[0.15, 0.15, 0.4, 16]} />
           <meshStandardMaterial color="#7f8c8d" metalness={0.9} roughness={0.1} />
@@ -607,10 +791,7 @@ function RoboticGate({ open }: { open: boolean }) {
       </group>
 
       {/* CENTRAL ROTARY CYCLOTRON VAULT LOCK CORE */}
-      {/* Ref-controlled so it spins and shrinks on breach */}
       <group ref={lockRef} position={[0, 0, 0.15]}>
-        
-        {/* Massive Outer Glowing Neon Cyan Ring */}
         <mesh>
           <torusGeometry args={[1.05, 0.14, 16, 64]} />
           <meshStandardMaterial 
@@ -620,7 +801,6 @@ function RoboticGate({ open }: { open: boolean }) {
           />
         </mesh>
 
-        {/* Radial industrial bolt rivets placed around the neon ring */}
         {rivets.map((pos, idx) => (
           <mesh key={idx} position={pos}>
             <sphereGeometry args={[0.08, 16, 16]} />
@@ -628,14 +808,12 @@ function RoboticGate({ open }: { open: boolean }) {
           </mesh>
         ))}
 
-        {/* Armored central cylinder housing */}
         <mesh rotation={[Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[0.7, 0.7, 0.35, 32]} />
           <meshStandardMaterial color="#2d3741" roughness={0.3} metalness={0.8} />
           <Edges scale={1.02} threshold={15} color="#00ffff" />
         </mesh>
 
-        {/* Outer lock cog teeth (procedural gear effect) */}
         {Array.from({ length: 8 }).map((_, i) => {
           const angle = (i / 8) * Math.PI * 2;
           return (
@@ -650,14 +828,12 @@ function RoboticGate({ open }: { open: boolean }) {
           );
         })}
 
-        {/* Steel Biometric Scanner Core Casing */}
         <mesh position={[0, 0, 0.1]} rotation={[Math.PI / 2, 0, 0]}>
           <sphereGeometry args={[0.42, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
           <meshStandardMaterial color="#7f8c8d" metalness={0.9} roughness={0.15} />
           <Edges scale={1.02} threshold={15} color="#00ffff" />
         </mesh>
 
-        {/* Inner Laser core aperture / dial */}
         <mesh position={[0, 0, 0.22]} rotation={[Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[0.2, 0.2, 0.08, 32]} />
           <meshStandardMaterial 
@@ -667,12 +843,10 @@ function RoboticGate({ open }: { open: boolean }) {
           />
         </mesh>
         
-        {/* Central lens scanner node */}
         <mesh position={[0, 0, 0.25]}>
           <sphereGeometry args={[0.08, 16, 16]} />
           <meshBasicMaterial color="#ffffff" />
         </mesh>
-
       </group>
     </group>
   );
@@ -687,8 +861,8 @@ export default function Experience({ gateOpen = false }: { gateOpen?: boolean })
       start: "top top",
       end: "bottom bottom",
       onUpdate: (self) => {
-        // Sections B and E are Security related (Glitch triggers on security sections)
-        if ((self.progress > 0.25 && self.progress < 0.35) || (self.progress > 0.6 && self.progress < 0.7)) {
+        // Sections B and F are Security related (Glitch triggers on security sections)
+        if ((self.progress > 0.2 && self.progress < 0.3) || (self.progress > 0.55 && self.progress < 0.65)) {
           setGlitchActive(true);
         } else {
           setGlitchActive(false);
@@ -718,8 +892,12 @@ export default function Experience({ gateOpen = false }: { gateOpen?: boolean })
         <MolecularGraph />
         <MedicalNode />
         <CommandCenter />
+        <ForensicsLab />
         <TechStackCluster />
       </Physics>
+
+      {/* High-Performance GPU-Driven Embers/Dust particles */}
+      <SpaceEmbers />
 
       <EffectComposer multisampling={0}>
         <Bloom luminanceThreshold={0.2} mipmapBlur intensity={1.5} />
@@ -740,21 +918,6 @@ export default function Experience({ gateOpen = false }: { gateOpen?: boolean })
       </EffectComposer>
       
       <pointLight position={[0, 0, 10]} intensity={1.5} color="#00ffff" />
-      
-      <Instances range={200}>
-        <boxGeometry args={[0.1, 0.1, 0.1]} />
-        <meshBasicMaterial color="#ffffff" opacity={0.3} transparent />
-        {Array.from({ length: 200 }).map((_, i) => (
-          <Instance
-            key={i}
-            position={[
-              (Math.random() - 0.5) * 50,
-              (Math.random() - 0.5) * 50,
-              (Math.random() - 0.5) * 150
-            ]}
-          />
-        ))}
-      </Instances>
     </>
   );
 }
