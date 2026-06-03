@@ -482,7 +482,7 @@ export default function Home() {
           <div className="max-w-xl backdrop-blur-md bg-black/45 p-8 md:p-10 rounded-2xl border border-green-500/20 shadow-[0_0_40px_rgba(0,255,100,0.05)] hover:shadow-[0_0_60px_rgba(0,255,100,0.1)] transition-all pointer-events-auto">
             <div className="flex items-center gap-3 mb-4 md:mb-6 text-green-400">
               <Network size={28} />
-              <span className="font-mono tracking-wider opacity-80 uppercase text-xs md:text-sm">Research &bull; AICCoNS 2026</span>
+              <span className="font-mono tracking-wider opacity-80 uppercase text-xs md:text-sm">Research</span>
             </div>
             <h2 className="text-3xl md:text-5xl font-bold mb-4 md:mb-6" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
               Molecular Cluster
