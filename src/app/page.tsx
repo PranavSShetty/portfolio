@@ -409,7 +409,7 @@ export default function Home() {
         {/* SECTION A: Transformer Lab */}
         <section 
           id="transformer" 
-          className={`h-screen flex items-center justify-start px-6 md:px-24 pointer-events-none transition-all duration-1000 ease-out transform ${
+          className={`h-screen flex items-center justify-start pt-20 md:pt-24 px-6 md:px-24 pointer-events-none transition-all duration-1000 ease-out transform ${
             activeSection === 1 ? "opacity-100 translate-x-0 scale-100" : "opacity-0 -translate-x-10 scale-95 pointer-events-none"
           }`}
         >
@@ -441,7 +441,7 @@ export default function Home() {
         {/* SECTION B: Adversarial Vault */}
         <section 
           id="adversarial" 
-          className={`h-screen flex items-center justify-end px-6 md:px-24 pointer-events-none transition-all duration-1000 ease-out transform ${
+          className={`h-screen flex items-center justify-end pt-20 md:pt-24 px-6 md:px-24 pointer-events-none transition-all duration-1000 ease-out transform ${
             activeSection === 2 ? "opacity-100 translate-x-0 scale-100" : "opacity-0 translate-x-10 scale-95 pointer-events-none"
           }`}
         >
@@ -475,7 +475,7 @@ export default function Home() {
         {/* SECTION C: Molecular Cluster */}
         <section 
           id="molecular" 
-          className={`h-screen flex items-center justify-start px-6 md:px-24 pointer-events-none transition-all duration-1000 ease-out transform ${
+          className={`h-screen flex items-center justify-start pt-20 md:pt-24 px-6 md:px-24 pointer-events-none transition-all duration-1000 ease-out transform ${
             activeSection === 3 ? "opacity-100 translate-x-0 scale-100" : "opacity-0 -translate-x-10 scale-95 pointer-events-none"
           }`}
         >
@@ -503,7 +503,7 @@ export default function Home() {
         {/* SECTION D: Medical Node */}
         <section 
           id="medical" 
-          className={`h-screen flex items-center justify-end px-6 md:px-24 pointer-events-none transition-all duration-1000 ease-out transform ${
+          className={`h-screen flex items-center justify-end pt-20 md:pt-24 px-6 md:px-24 pointer-events-none transition-all duration-1000 ease-out transform ${
             activeSection === 4 ? "opacity-100 translate-x-0 scale-100" : "opacity-0 translate-x-10 scale-95 pointer-events-none"
           }`}
         >
@@ -531,7 +531,7 @@ export default function Home() {
         {/* SECTION E: Command Center */}
         <section 
           id="command" 
-          className={`h-screen flex items-center justify-start px-6 md:px-24 pointer-events-none transition-all duration-1000 ease-out transform ${
+          className={`h-screen flex items-center justify-start pt-20 md:pt-24 px-6 md:px-24 pointer-events-none transition-all duration-1000 ease-out transform ${
             activeSection === 5 ? "opacity-100 translate-x-0 scale-100" : "opacity-0 -translate-x-10 scale-95 pointer-events-none"
           }`}
         >
@@ -563,7 +563,7 @@ export default function Home() {
         {/* SECTION F: Forensics Lab (Onyx Forensics) */}
         <section 
           id="forensics" 
-          className={`h-screen flex items-center justify-end px-6 md:px-24 pointer-events-none transition-all duration-1000 ease-out transform ${
+          className={`h-screen flex items-center justify-end pt-20 md:pt-24 px-6 md:px-24 pointer-events-none transition-all duration-1000 ease-out transform ${
             activeSection === 6 ? "opacity-100 translate-x-0 scale-100" : "opacity-0 translate-x-10 scale-95 pointer-events-none"
           }`}
         >
@@ -617,11 +617,11 @@ export default function Home() {
         {/* SECTION H: Contact Page (Cinematic Cybernetic Dashboard & Terminal) */}
         <section 
           id="contact" 
-          className={`h-[100vh] flex items-center justify-center px-4 md:px-6 pointer-events-none transition-all duration-1000 ease-out transform ${
+          className={`h-[100vh] flex items-center justify-center pt-24 pb-8 px-4 md:px-6 pointer-events-none transition-all duration-1000 ease-out transform ${
             activeSection === 8 ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-10 scale-95 pointer-events-none"
           }`}
         >
-          <div className="w-full max-w-5xl backdrop-blur-md bg-black/65 p-6 md:p-10 rounded-2xl border border-cyan-500/25 shadow-[0_0_50px_rgba(0,255,255,0.06)] hover:shadow-[0_0_80px_rgba(0,255,255,0.12)] transition-all duration-500 pointer-events-auto relative overflow-hidden">
+          <div data-lenis-prevent className="w-full max-w-5xl backdrop-blur-md bg-black/65 p-5 md:p-8 rounded-2xl border border-cyan-500/25 shadow-[0_0_50px_rgba(0,255,255,0.06)] hover:shadow-[0_0_80px_rgba(0,255,255,0.12)] transition-all duration-500 pointer-events-auto relative overflow-y-auto max-h-[calc(100vh-140px)] scrollbar-none">
             
             {/* Ambient Background Grid Line */}
             <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.15)_50%)] bg-[size:100%_4px] pointer-events-none opacity-40" />
@@ -641,7 +641,7 @@ export default function Home() {
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 md:gap-12 relative z-10">
               
               {/* Left Column: Handshake Details & Tech Diagnostics (2/5 cols) */}
-              <div className="lg:col-span-2 flex flex-col justify-between space-y-6 md:space-y-8">
+              <div className="lg:col-span-2 flex flex-col justify-between space-y-4 md:space-y-6">
                 <div>
                   <span className="text-[10px] font-mono bg-cyan-900/30 text-cyan-300 border border-cyan-500/20 px-2 py-0.5 rounded uppercase tracking-widest mb-3 inline-block">SECURE HANDSHAKE</span>
                   <h2 className="text-3xl md:text-5xl font-black mb-4 md:mb-6 text-white leading-tight uppercase tracking-tight" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
@@ -724,7 +724,7 @@ export default function Home() {
                     <span className="animate-pulse text-green-400">SYNCED</span>
                   </div>
 
-                  <div className="space-y-2 h-64 overflow-y-auto scrollbar-none pr-2 text-[11px] leading-relaxed">
+                  <div className="space-y-2 h-48 overflow-y-auto scrollbar-none pr-2 text-[11px] leading-relaxed">
                     <div className="text-gray-500">// INITIALIZING SECURE PACKET OVERRIDE...</div>
                     <div className="flex justify-between text-green-400">
                       <span>&gt; AES-256 SYMMETRIC HANDSHAKE</span>
@@ -770,7 +770,7 @@ export default function Home() {
             </div>
             
             {/* Terminal Footer */}
-            <div className="mt-8 md:mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
+            <div className="mt-6 md:mt-8 pt-4 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
               <p className="text-gray-500 text-[10px] md:text-xs font-mono flex items-center gap-2">
                 <ShieldCheck size={14} className="text-cyan-400 animate-pulse" /> 
                 SECURE AES-256 DIGITAL HANDSHAKE ESTABLISHED
