@@ -363,7 +363,7 @@ export default function Home() {
           
           <div className="z-10 flex flex-col items-center text-center w-full max-w-4xl backdrop-blur-sm bg-black/25 p-8 md:p-12 rounded-3xl border border-white/5 shadow-2xl">
             <h1 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-gray-300 to-gray-600 mb-4 animate-fade-in" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
-              PRANAV S. SHETTY
+              PRANAV S SHETTY
             </h1>
             
             <p className="text-sm sm:text-xl md:text-2xl font-light text-cyan-400 mb-6 tracking-wide uppercase flex flex-wrap justify-center gap-2">
