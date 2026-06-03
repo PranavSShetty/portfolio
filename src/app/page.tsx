@@ -39,6 +39,7 @@ export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const lenisRef = useRef<Lenis | null>(null);
   const [activeSection, setActiveSection] = useState(0);
+  const [viewCount, setViewCount] = useState<number | null>(null);
 
   // Breach loader state
   const [loading, setLoading] = useState(true);
@@ -62,6 +63,39 @@ export default function Home() {
       document.removeEventListener("mousedown", handleOutsideClick);
       document.removeEventListener("touchstart", handleOutsideClick);
     };
+  }, []);
+
+  // Real-time View Counter (polls every 15 seconds to update without additional increments)
+  useEffect(() => {
+    const fetchViews = async () => {
+      try {
+        const res = await fetch("https://api.counterapi.dev/v1/pranavshettyportfolio/views/");
+        const data = await res.json();
+        if (data && typeof data.count === "number") {
+          setViewCount(data.count);
+        }
+      } catch (err) {
+        console.error("Failed to fetch views:", err);
+      }
+    };
+
+    const incrementViews = async () => {
+      try {
+        const res = await fetch("https://api.counterapi.dev/v1/pranavshettyportfolio/views/up");
+        const data = await res.json();
+        if (data && typeof data.count === "number") {
+          setViewCount(data.count);
+        }
+      } catch (err) {
+        console.error("Failed to increment views:", err);
+        fetchViews();
+      }
+    };
+
+    incrementViews();
+
+    const interval = setInterval(fetchViews, 15000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -671,6 +705,10 @@ export default function Home() {
                     <span>BANDWIDTH:</span>
                     <span className="text-white">641.8 Mb/s</span>
                   </div>
+                  <div className="flex justify-between border-t border-cyan-500/10 pt-1.5 mt-1.5">
+                    <span>SYSTEM VISITS:</span>
+                    <span className="text-cyan-400 font-bold">{viewCount !== null ? viewCount.toLocaleString() : "FETCHING..."}</span>
+                  </div>
                   {/* Staggered loading graph */}
                   <div className="w-full bg-cyan-950/60 h-1.5 rounded overflow-hidden mt-2 relative border border-cyan-500/10">
                     <div className="bg-gradient-to-r from-cyan-500 to-teal-400 h-full animate-[shimmer_2.5s_infinite]" style={{ width: '78%' }}></div>
@@ -781,6 +819,15 @@ export default function Home() {
         </section>
  
       </div>
+
+      {/* Real-time View Counter Badge */}
+      {!loading && (
+        <div className="fixed bottom-6 right-6 z-40 flex items-center gap-2 bg-black/85 border border-cyan-500/30 rounded-md px-3 py-1.5 font-mono text-[10px] text-cyan-400 shadow-[0_0_15px_rgba(0,255,255,0.1)] backdrop-blur-sm transition-all hover:border-cyan-400 pointer-events-auto">
+          <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-ping" />
+          <span className="opacity-75">LIVE_VIEWS:</span>
+          <span className="font-bold text-white tracking-widest">{viewCount !== null ? viewCount.toLocaleString() : "..."}</span>
+        </div>
+      )}
     </main>
   );
 }
