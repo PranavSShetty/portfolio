@@ -577,7 +577,7 @@ export default function Home() {
             <h2 className="text-3xl md:text-5xl font-bold mb-4 md:mb-6 text-white" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
               Command Center
             </h2>
-            <h3 className="text-lg md:text-xl text-gray-300 mb-4 font-medium">Web & Cybersecurity Intern</h3>
+            <h3 className="text-lg md:text-xl text-gray-300 mb-4 font-medium">Web & Cybersecurity Intern (Jan 2026 – May 2026)</h3>
             <p className="text-gray-400 leading-relaxed mb-6 md:mb-8 text-sm md:text-base">
               Conducted vulnerability assessments and security analysis for active infrastructure. 
               Also architected a Full-stack College Stationary Management System featuring secure RBAC, dynamic JSP content rendering, and real-time MySQL inventory tracking.
@@ -718,7 +718,7 @@ export default function Home() {
                 {/* Secure Links */}
                 <div className="space-y-4">
                   <a 
-                    href="mailto:studytimemail24@gmail.com" 
+                    href="mailto:pranavsshetty15@gmail.com" 
                     className="flex items-center gap-4 group p-3 rounded-xl bg-white/5 border border-white/5 hover:border-cyan-500/30 hover:bg-cyan-950/10 hover:shadow-[0_0_20px_rgba(0,255,255,0.05)] transition-all duration-300"
                   >
                     <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center border border-white/10 group-hover:border-cyan-500/30 group-hover:text-cyan-400 transition-all">
@@ -726,7 +726,7 @@ export default function Home() {
                     </div>
                     <div>
                       <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Email Protocol</p>
-                      <p className="font-mono text-xs md:text-sm text-gray-300 group-hover:text-white transition-colors">studytimemail24@gmail.com</p>
+                      <p className="font-mono text-xs md:text-sm text-gray-300 group-hover:text-white transition-colors">pranavsshetty15@gmail.com</p>
                     </div>
                   </a>
                   
